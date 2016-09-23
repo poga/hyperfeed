@@ -58,3 +58,32 @@ tape('create xml', function (t) {
     })
   })
 })
+
+tape('dedup', function (t) {
+  var feed = new RSS({
+    title: 'test feed',
+    feed_url: 'foo',
+    site_url: 'bar'
+  })
+  var testEntries = []
+  for (var i = 0; i < 3; i++) {
+    var x = {
+      title: `entry${i}`,
+      description: `desc${i}`,
+      url: 'example.com',
+      guid: 1, // all with same guid
+      date: Date.now()
+    }
+    testEntries.push(x)
+    feed.item(x)
+  }
+
+  var torrent = new peerRSS.Torrent()
+  torrent.update(feed.xml()).then(torrent => {
+    torrent.list((err, entries) => {
+      t.error(err)
+      t.same(entries.length, 1 + 1) // 1 feed item and 1 meta file
+      t.end()
+    })
+  })
+})

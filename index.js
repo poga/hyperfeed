@@ -38,7 +38,7 @@ Torrent.prototype.update = function (feed) {
       while (entry = readable.read()) { tasks.push(save(entry)) }
     })
     feedparser.on('end', function () {
-      async.parallel(tasks, (err, results) => {
+      async.series(tasks, (err, results) => {
         if (err) return reject(new Error('archive failed'))
         resolve(torrent)
       })
@@ -47,13 +47,16 @@ Torrent.prototype.update = function (feed) {
 
   function save (entry) {
     return (cb) => {
-      if (!entry.guid) return cb(new Error('GUID not found'))
+      torrent.list((err, entries) => {
+        if (entries.find(x => x.name === entry.guid)) return cb() // ignore duplicated entry
+        if (!entry.guid) return cb(new Error('GUID not found'))
 
-      var ws = torrent._archive.createFileWriteStream({
-        name: entry.guid,
-        ctime: entry.date ? entry.date.getTime() : 0
+        var ws = torrent._archive.createFileWriteStream({
+          name: entry.guid,
+          ctime: entry.date ? entry.date.getTime() : 0
+        })
+        toStream(JSON.stringify(entry)).pipe(ws).on('finish', cb)
       })
-      toStream(JSON.stringify(entry)).pipe(ws).on('finish', cb)
     }
   }
 }
