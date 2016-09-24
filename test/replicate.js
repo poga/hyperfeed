@@ -1,5 +1,5 @@
 const tape = require('tape')
-const hyperfeed = require('..')
+const Hyperfeed = require('..')
 const RSS = require('rss')
 const FeedParser = require('feedparser')
 const toStream = require('string-to-stream')
@@ -23,10 +23,10 @@ for (var i = 0; i < 10; i++) {
 }
 
 tape('replicate', function (t) {
-  var torrent = new hyperfeed.Torrent()
+  var torrent = new Hyperfeed()
   var write = torrent.swarm()
   torrent.update(feed.xml()).then(torrent => {
-    var peer = new hyperfeed.Torrent(torrent.key())
+    var peer = new Hyperfeed(torrent.key())
     var read = peer.swarm()
     peer.list((err, entries) => {
       t.error(err)

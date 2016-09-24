@@ -1,5 +1,5 @@
 const tape = require('tape')
-const peerRSS = require('..')
+const Hyperfeed = require('..')
 const RSS = require('rss')
 const request = require('request')
 const FeedParser = require('feedparser')
@@ -24,7 +24,7 @@ for (var i = 0; i < 10; i++) {
 }
 
 tape('create archive from rss', function (t) {
-  var torrent = new peerRSS.Torrent()
+  var torrent = new Hyperfeed()
   torrent.update(feed.xml()).then(torrent => {
     torrent.list((err, entries) => {
       t.error(err)
@@ -35,7 +35,7 @@ tape('create archive from rss', function (t) {
 })
 
 tape('create xml', function (t) {
-  var torrent = new peerRSS.Torrent()
+  var torrent = new Hyperfeed()
   torrent.update(feed.xml()).then(torrent => {
     torrent.xml(10).then(xml => {
       var parser = new FeedParser()
@@ -78,7 +78,7 @@ tape('dedup', function (t) {
     feed.item(x)
   }
 
-  var torrent = new peerRSS.Torrent()
+  var torrent = new Hyperfeed()
   torrent.update(feed.xml()).then(torrent => {
     torrent.list((err, entries) => {
       t.error(err)

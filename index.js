@@ -124,7 +124,7 @@ Torrent.prototype.xml = function (count) {
   })
 }
 
-exports.Torrent = Torrent
+module.exports = Torrent
 
 function buildXML (archive, meta, entries) {
   return new Promise((resolve, reject) => {
