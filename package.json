@@ -1,7 +1,7 @@
 {
   "name": "hyperfeed",
   "version": "1.0.0",
-  "description": "p2p RSS",
+  "description": "self-archiving p2p live RSS feed",
   "main": "index.js",
   "scripts": {
     "test": "./node_modules/.bin/tape test/*.js | ./node_modules/.bin/tap-dot"
