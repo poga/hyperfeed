@@ -27,6 +27,8 @@ request('https://medium.com/feed/google-developers', (err, resp, body) => {
 })
 ```
 
+download feed from peer
+
 ```js
 const Hyperfeed = require('hyperfeed')
 
