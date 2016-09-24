@@ -5,19 +5,39 @@ const toStream = require('string-to-stream')
 const async = require('async')
 const RSS = require('rss')
 const toString = require('stream-to-string')
+const swarm = require('hyperdrive-archive-swarm')
 
-function Torrent (opts) {
+function Torrent (key, opts) {
   if (!(this instanceof Torrent)) return new Torrent(opts)
 
+  if (typeof key === 'object' && !Buffer.isBuffer(key) && key) {
+    opts = key
+    key = null
+  }
   if (!opts) opts = {}
   if (!opts.storage) opts.storage = memdb()
   this._drive = hyperdrive(opts.storage)
-  this._archive = this._drive.createArchive()
+  if (key) {
+    this._archive = this._drive.createArchive(key)
+    this.own = false
+  } else {
+    this._archive = this._drive.createArchive()
+    this.own = true
+  }
+}
+
+Torrent.prototype.key = function () {
+  return this._archive.key
+}
+
+Torrent.prototype.swarm = function () {
+  return swarm(this._archive)
 }
 
 Torrent.prototype.update = function (feed) {
   var torrent = this
   return new Promise((resolve, reject) => {
+    if (!this.own) return reject(new Error("can't update archive you don't own"))
     var feedparser = new FeedParser()
     toStream(feed).pipe(feedparser)
 
@@ -48,6 +68,7 @@ Torrent.prototype.update = function (feed) {
   function save (entry) {
     return (cb) => {
       torrent.list((err, entries) => {
+        if (err) return cb(err)
         if (entries.find(x => x.name === entry.guid)) return cb() // ignore duplicated entry
         if (!entry.guid) return cb(new Error('GUID not found'))
 
@@ -62,9 +83,13 @@ Torrent.prototype.update = function (feed) {
 }
 
 Torrent.prototype.list = function (opts, cb) {
-  this._archive.finalize(() => {
+  if (this.own) {
+    this._archive.finalize(() => {
+      this._archive.list(opts, cb)
+    })
+  } else {
     this._archive.list(opts, cb)
-  })
+  }
 }
 
 Torrent.prototype.xml = function (count) {

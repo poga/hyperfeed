@@ -1,5 +1,5 @@
 const tape = require('tape')
-const peerRSS = require('.')
+const peerRSS = require('..')
 const RSS = require('rss')
 const request = require('request')
 const FeedParser = require('feedparser')

@@ -1,24 +1,30 @@
 {
-  "name": "peer-rss",
+  "name": "hyperfeed",
   "version": "1.0.0",
   "description": "p2p RSS",
   "main": "index.js",
   "scripts": {
-    "test": "node test.js"
+    "test": "./node_modules/.bin/tape test/*.js | ./node_modules/.bin/tap-dot"
   },
-  "keywords": ["hyperdrive", "RSS", "P2P"],
+  "keywords": [
+    "hyperdrive",
+    "RSS",
+    "P2P"
+  ],
   "author": "Poga Po<poga.bahamut@gmail.com>",
   "license": "MIT",
   "dependencies": {
     "async": "^2.0.1",
     "feedparser": "^1.1.4",
     "hyperdrive": "^7.6.0",
+    "hyperdrive-archive-swarm": "^4.1.6",
     "memdb": "^1.3.1",
     "rss": "^1.2.1",
     "stream-to-string": "^1.1.0",
     "string-to-stream": "^1.1.0"
   },
   "devDependencies": {
+    "tap-dot": "^1.0.5",
     "tape": "^4.6.0"
   }
 }
