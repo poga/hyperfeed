@@ -2,9 +2,13 @@
 
 a self-archiving p2p live RSS feed.
 
-* **Self-archiving**: All published items will be archived. If the feed is updated and doesn't contain old items. Hyperfeed still preserve them.
+* **Self-archiving**: All published items will be archived. If the feed is updated and doesn't contain old items, Hyperfeed still preserve them.
 * **P2P Live**: No need to constantly scrap a RSS feed, Updates will be pushed to you.
 * **Secure**: All items are verified via publisher's public key.
+
+```
+npm install hyperfeed
+```
 
 ## Synopsis
 
