@@ -11,6 +11,7 @@
     "RSS",
     "P2P"
   ],
+  "repository": "poga/hyperfeed",
   "author": "Poga Po<poga.bahamut@gmail.com>",
   "license": "MIT",
   "dependencies": {
