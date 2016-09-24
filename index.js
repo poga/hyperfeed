@@ -6,6 +6,7 @@ const async = require('async')
 const RSS = require('rss')
 const toString = require('stream-to-string')
 const swarm = require('hyperdrive-archive-swarm')
+const request = require('request')
 
 function Torrent (key, opts) {
   if (!(this instanceof Torrent)) return new Torrent(opts)
@@ -16,6 +17,7 @@ function Torrent (key, opts) {
   }
   if (!opts) opts = {}
   if (!opts.storage) opts.storage = memdb()
+  this.scrap = opts.scrap
   this._drive = hyperdrive(opts.storage)
   if (key) {
     this._archive = this._drive.createArchive(key)
@@ -55,7 +57,10 @@ Torrent.prototype.update = function (feed) {
       var readable = this
       var entry
 
-      while (entry = readable.read()) { tasks.push(save(entry)) }
+      while (entry = readable.read()) {
+        tasks.push(save(entry))
+        if (torrent.scrap) tasks.push(scrap(entry))
+      }
     })
     feedparser.on('end', function () {
       async.series(tasks, (err, results) => {
@@ -72,13 +77,27 @@ Torrent.prototype.update = function (feed) {
         if (entries.find(x => x.name === entry.guid)) return cb() // ignore duplicated entry
         if (!entry.guid) return cb(new Error('GUID not found'))
 
-        var ws = torrent._archive.createFileWriteStream({
-          name: entry.guid,
-          ctime: entry.date ? entry.date.getTime() : 0
-        })
-        toStream(JSON.stringify(entry)).pipe(ws).on('finish', cb)
+        toStream(JSON.stringify(entry)).pipe(createWriteStream(entry)).on('finish', cb)
       })
     }
+  }
+
+  function scrap (entry) {
+    return (cb) => {
+      request(entry.url, (err, resp, body) => {
+        if (err) return cb(err)
+        if (resp.statusCode !== 200) return cb(new Error('invalid status code'))
+
+        toStream(body).pipe(createWriteStream(entry)).on('finish', cb)
+      })
+    }
+  }
+
+  function createWriteStream (entry) {
+    return torrent._archive.createFileWriteStream({
+      name: entry.guid,
+      ctime: entry.date ? entry.date.getTime() : 0
+    })
   }
 }
 
