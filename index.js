@@ -58,8 +58,8 @@ Torrent.prototype.update = function (feed) {
       var entry
 
       while (entry = readable.read()) {
-        tasks.push(save(entry))
-        if (torrent.scrap) tasks.push(scrap(entry))
+        tasks.push(torrent._save(entry))
+        if (torrent.scrap) tasks.push(torrent._scrap(entry))
       }
     })
     feedparser.on('end', function () {
@@ -69,36 +69,6 @@ Torrent.prototype.update = function (feed) {
       })
     })
   })
-
-  function save (entry) {
-    return (cb) => {
-      torrent.list((err, entries) => {
-        if (err) return cb(err)
-        if (entries.find(x => x.name === entry.guid)) return cb() // ignore duplicated entry
-        if (!entry.guid) return cb(new Error('GUID not found'))
-
-        toStream(JSON.stringify(entry)).pipe(createWriteStream(entry)).on('finish', cb)
-      })
-    }
-  }
-
-  function scrap (entry) {
-    return (cb) => {
-      request(entry.url, (err, resp, body) => {
-        if (err) return cb(err)
-        if (resp.statusCode !== 200) return cb(new Error('invalid status code'))
-
-        toStream(body).pipe(createWriteStream(entry)).on('finish', cb)
-      })
-    }
-  }
-
-  function createWriteStream (entry) {
-    return torrent._archive.createFileWriteStream({
-      name: entry.guid,
-      ctime: entry.date ? entry.date.getTime() : 0
-    })
-  }
 }
 
 Torrent.prototype.list = function (opts, cb) {
@@ -121,6 +91,36 @@ Torrent.prototype.xml = function (count) {
 
       buildXML(this._archive, this.meta, entries).then(xml => resolve(xml))
     })
+  })
+}
+
+Torrent.prototype._save = function (entry) {
+  return (cb) => {
+    this.list((err, entries) => {
+      if (err) return cb(err)
+      if (entries.find(x => x.name === entry.guid)) return cb() // ignore duplicated entry
+      if (!entry.guid) return cb(new Error('GUID not found'))
+
+      toStream(JSON.stringify(entry)).pipe(this._createWriteStream(entry)).on('finish', cb)
+    })
+  }
+}
+
+Torrent.prototype._scrap = function (entry) {
+  return (cb) => {
+    request(entry.url, (err, resp, body) => {
+      if (err) return cb(err)
+      if (resp.statusCode !== 200) return cb(new Error('invalid status code'))
+
+      toStream(body).pipe(this._createWriteStream(entry)).on('finish', cb)
+    })
+  }
+}
+
+Torrent.prototype._createWriteStream = function (entry) {
+  return this._archive.createFileWriteStream({
+    name: entry.guid,
+    ctime: entry.date ? entry.date.getTime() : 0
   })
 }
 
