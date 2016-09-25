@@ -71,6 +71,20 @@ Torrent.prototype.update = function (feed) {
   })
 }
 
+Torrent.prototype.push = function (entry) {
+  return new Promise((resolve, reject) => {
+    var tasks = []
+
+    tasks.push(this._save(entry))
+    if (this.scrap) tasks.push(this._scrap(entry))
+
+    async.series(tasks, (err, results) => {
+      if (err) return reject(new Error('archive failed'))
+      resolve(this)
+    })
+  })
+}
+
 Torrent.prototype.list = function (opts, cb) {
   if (this.own) {
     this._archive.finalize(() => {

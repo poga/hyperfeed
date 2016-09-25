@@ -34,6 +34,19 @@ tape('create archive from rss', function (t) {
   })
 })
 
+tape('push', function (t) {
+  var torrent = new Hyperfeed()
+  torrent.update(feed.xml()).then(torrent => {
+    torrent.push({title: 'moo', guid: 'x'}).then(torrent => {
+      torrent.list((err, entries) => {
+        t.error(err)
+        t.same(entries.length, 11 + 1) // 11 feed item and 1 meta file
+        t.end()
+      })
+    })
+  })
+})
+
 tape('create xml', function (t) {
   var torrent = new Hyperfeed()
   torrent.update(feed.xml()).then(torrent => {
