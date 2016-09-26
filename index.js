@@ -34,8 +34,8 @@ Torrent.prototype.key = function () {
   return this._archive.key
 }
 
-Torrent.prototype.swarm = function () {
-  return swarm(this._archive)
+Torrent.prototype.swarm = function (opts) {
+  return swarm(this._archive, opts)
 }
 
 Torrent.prototype.update = function (feed) {
