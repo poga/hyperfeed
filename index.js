@@ -101,6 +101,7 @@ Torrent.prototype.push = function (entry) {
 }
 
 Torrent.prototype.list = function (opts) {
+  var torrent = this
   return new Promise((resolve, reject) => {
     if (this.own) {
       this._archive.finalize(() => {
@@ -113,7 +114,15 @@ Torrent.prototype.list = function (opts) {
     function done (err, results) {
       if (err) return reject(err)
 
-      resolve(results.filter(x => { return x.name !== '_meta' }))
+      var tasks = []
+      results.filter(x => { return x.name !== '_meta' }).forEach(x => {
+        tasks.push(load(torrent._archive, x))
+      })
+
+      async.parallel(tasks, (err, results) => {
+        if (err) return reject(err)
+        resolve(results)
+      })
     }
   })
 }

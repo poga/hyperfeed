@@ -44,8 +44,8 @@ tape('push', function (t) {
   torrent.update(rss).then(torrent => {
     torrent.push({title: 'moo'}).then(torrent => {
       torrent.list().then(entries => {
-        t.ok(entries[0].name) // should have default name(guid)
-        t.ok(entries[0].ctime) // should have default value
+        t.ok(entries[0].guid) // should have default name(guid)
+        t.ok(entries[0].date) // should have default value
         t.end()
       })
     })
