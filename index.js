@@ -96,25 +96,22 @@ Torrent.prototype.push = function (entry) {
   })
 }
 
-Torrent.prototype.list = function (opts, cb) {
-  if (typeof opts === 'function') {
-    cb = opts
-    opts = {}
-  }
-
-  if (this.own) {
-    this._archive.finalize(() => {
+Torrent.prototype.list = function (opts) {
+  return new Promise((resolve, reject) => {
+    if (this.own) {
+      this._archive.finalize(() => {
+        this._archive.list(opts, done)
+      })
+    } else {
       this._archive.list(opts, done)
-    })
-  } else {
-    this._archive.list(opts, done)
-  }
+    }
 
-  function done (err, results) {
-    if (err) return cb(err)
+    function done (err, results) {
+      if (err) return reject(err)
 
-    cb(null, results.filter(x => { return x.name !== '_meta' }))
-  }
+      resolve(results.filter(x => { return x.name !== '_meta' }))
+    }
+  })
 }
 
 Torrent.prototype.xml = function (count) {

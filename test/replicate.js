@@ -28,8 +28,7 @@ tape('replicate', function (t) {
   torrent.update(feed.xml()).then(torrent => {
     var peer = new Hyperfeed(torrent.key())
     var read = peer.swarm()
-    peer.list((err, entries) => {
-      t.error(err)
+    peer.list().then(entries => {
       t.same(entries.length, 10)
       write.close()
       read.close()

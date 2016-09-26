@@ -26,8 +26,7 @@ var rss = feed.render('rss-2.0')
 tape('create archive from rss', function (t) {
   var torrent = new Hyperfeed()
   torrent.update(rss).then(torrent => {
-    torrent.list((err, entries) => {
-      t.error(err)
+    torrent.list().then(entries => {
       t.same(entries.length, 10)
       t.end()
     })
@@ -38,8 +37,7 @@ tape('push', function (t) {
   var torrent = new Hyperfeed()
   torrent.update(rss).then(torrent => {
     torrent.push({title: 'moo', guid: 'x'}).then(torrent => {
-      torrent.list((err, entries) => {
-        t.error(err)
+      torrent.list().then(entries => {
         t.same(entries.length, 11)
         t.end()
       })
@@ -93,8 +91,7 @@ tape('dedup', function (t) {
 
   var torrent = new Hyperfeed()
   torrent.update(rss).then(torrent => {
-    torrent.list((err, entries) => {
-      t.error(err)
+    torrent.list().then(entries => {
       t.same(entries.length, 1)
       t.end()
     })
