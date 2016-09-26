@@ -3,10 +3,11 @@ const FeedParser = require('feedparser')
 const memdb = require('memdb')
 const toStream = require('string-to-stream')
 const async = require('async')
-const RSS = require('rss')
+const Feed = require('feed')
 const toString = require('stream-to-string')
 const swarm = require('hyperdrive-archive-swarm')
 const request = require('request')
+const moment = require('moment')
 
 function Torrent (key, opts) {
   if (!(this instanceof Torrent)) return new Torrent(opts)
@@ -64,7 +65,7 @@ Torrent.prototype.update = function (feed) {
     })
     feedparser.on('end', function () {
       async.series(tasks, (err, results) => {
-        if (err) return reject(new Error('archive failed'))
+        if (err) return reject(err)
         resolve(torrent)
       })
     })
@@ -142,7 +143,7 @@ module.exports = Torrent
 
 function buildXML (archive, meta, entries) {
   return new Promise((resolve, reject) => {
-    var feed = new RSS(Object.assign(meta, {feed_url: meta.xmlUrl, site_url: meta.link}))
+    var feed = new Feed(Object.assign(meta, {feed_url: meta.xmlUrl, site_url: meta.link}))
     var tasks = []
     entries.forEach(e => {
       tasks.push(load(archive, e))
@@ -150,8 +151,8 @@ function buildXML (archive, meta, entries) {
 
     async.parallel(tasks, (err, results) => {
       if (err) return reject(err)
-      results.forEach(r => feed.item(JSON.parse(r)))
-      resolve(feed.xml())
+      results.forEach(r => feed.addItem(r))
+      resolve(feed.render('rss-2.0'))
     })
   })
 }
@@ -163,6 +164,12 @@ function byCTimeDESC (x, y) {
 function load (archive, entry) {
   return (cb) => {
     var rs = archive.createFileReadStream(entry)
-    toString(rs, cb)
+    toString(rs, (err, str) => {
+      if (err) return cb(err)
+
+      var item = JSON.parse(str)
+      item.date = moment(item.date).toDate()
+      cb(null, item)
+    })
   }
 }

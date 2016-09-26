@@ -1,14 +1,13 @@
 const tape = require('tape')
 const Hyperfeed = require('..')
-const RSS = require('rss')
-const request = require('request')
+const Feed = require('feed')
 const FeedParser = require('feedparser')
 const toStream = require('string-to-stream')
 
-var feed = new RSS({
+var feed = new Feed({
   title: 'test feed',
-  feed_url: 'foo',
-  site_url: 'bar'
+  description: 'http://example.com',
+  link: 'http://example.com'
 })
 var testEntries = []
 for (var i = 0; i < 10; i++) {
@@ -16,16 +15,17 @@ for (var i = 0; i < 10; i++) {
     title: `entry${i}`,
     description: `desc${i}`,
     url: 'example.com',
-    guid: i,
-    date: Date.now()
+    guid: `id-${i}`,
+    date: new Date()
   }
   testEntries.push(x)
-  feed.item(x)
+  feed.addItem(x)
 }
+var rss = feed.render('rss-2.0')
 
 tape('create archive from rss', function (t) {
   var torrent = new Hyperfeed()
-  torrent.update(feed.xml()).then(torrent => {
+  torrent.update(rss).then(torrent => {
     torrent.list((err, entries) => {
       t.error(err)
       t.same(entries.length, 10 + 1) // 10 feed item and 1 meta file
@@ -36,7 +36,7 @@ tape('create archive from rss', function (t) {
 
 tape('push', function (t) {
   var torrent = new Hyperfeed()
-  torrent.update(feed.xml()).then(torrent => {
+  torrent.update(rss).then(torrent => {
     torrent.push({title: 'moo', guid: 'x'}).then(torrent => {
       torrent.list((err, entries) => {
         t.error(err)
@@ -49,7 +49,7 @@ tape('push', function (t) {
 
 tape('create xml', function (t) {
   var torrent = new Hyperfeed()
-  torrent.update(feed.xml()).then(torrent => {
+  torrent.update(rss).then(torrent => {
     torrent.xml(10).then(xml => {
       var parser = new FeedParser()
       toStream(xml).pipe(parser)
@@ -58,8 +58,7 @@ tape('create xml', function (t) {
       parser.on('error', e => t.error(e))
       parser.on('meta', meta => {
         t.same(meta.title, 'test feed')
-        t.same(meta.xmlUrl, 'foo')
-        t.same(meta.link, 'bar')
+        t.same(meta.link, 'http://example.com')
       })
       parser.on('data', entry => {
         entries.push(entry)
@@ -73,10 +72,10 @@ tape('create xml', function (t) {
 })
 
 tape('dedup', function (t) {
-  var feed = new RSS({
+  var feed = new Feed({
     title: 'test feed',
-    feed_url: 'foo',
-    site_url: 'bar'
+    description: 'http://example.com',
+    link: 'http://example.com'
   })
   var testEntries = []
   for (var i = 0; i < 3; i++) {
@@ -85,14 +84,15 @@ tape('dedup', function (t) {
       description: `desc${i}`,
       url: 'example.com',
       guid: 1, // all with same guid
-      date: Date.now()
+      date: new Date()
     }
     testEntries.push(x)
-    feed.item(x)
+    feed.addItem(x)
   }
+  var rss = feed.render('rss-2.0')
 
   var torrent = new Hyperfeed()
-  torrent.update(feed.xml()).then(torrent => {
+  torrent.update(rss).then(torrent => {
     torrent.list((err, entries) => {
       t.error(err)
       t.same(entries.length, 1 + 1) // 1 feed item and 1 meta file
