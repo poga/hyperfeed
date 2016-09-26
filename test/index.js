@@ -100,3 +100,33 @@ tape('dedup', function (t) {
     })
   })
 })
+
+tape('set meta', function (t) {
+  var torrent = new Hyperfeed()
+  torrent.update(rss).then(torrent => {
+    torrent.setMeta({
+      title: 'foo',
+      description: 'http://example2.com',
+      link: 'http://example2.com'
+    }).then(torrent => {
+      torrent.xml(10).then(xml => {
+        var parser = new FeedParser()
+        toStream(xml).pipe(parser)
+
+        parser.on('error', e => t.error(e))
+        parser.on('meta', meta => {
+          t.same(meta.title, 'foo')
+          t.same(meta.link, 'http://example2.com')
+          t.same(meta.description, 'http://example2.com')
+        })
+        parser.on('data', entry => {
+          // ignore entry, we still need this handler to consume the feed and trigger end event
+        })
+        parser.on('end', () => {
+          t.end()
+        })
+      })
+    })
+  })
+})
+

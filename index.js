@@ -72,6 +72,16 @@ Torrent.prototype.update = function (feed) {
   })
 }
 
+Torrent.prototype.setMeta = function (meta) {
+  var torrent = this
+  torrent.meta = meta
+
+  return new Promise((resolve, reject) => {
+    var ws = torrent._archive.createFileWriteStream('_meta')
+    toStream(JSON.stringify(meta)).pipe(ws).on('finish', () => { resolve(torrent) })
+  })
+}
+
 Torrent.prototype.push = function (entry) {
   return new Promise((resolve, reject) => {
     var tasks = []
