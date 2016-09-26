@@ -87,12 +87,23 @@ Torrent.prototype.push = function (entry) {
 }
 
 Torrent.prototype.list = function (opts, cb) {
+  if (typeof opts === 'function') {
+    cb = opts
+    opts = {}
+  }
+
   if (this.own) {
     this._archive.finalize(() => {
-      this._archive.list(opts, cb)
+      this._archive.list(opts, done)
     })
   } else {
-    this._archive.list(opts, cb)
+    this._archive.list(opts, done)
+  }
+
+  function done (err, results) {
+    if (err) return cb(err)
+
+    cb(null, results.filter(x => { return x.name !== '_meta' }))
   }
 }
 
@@ -101,7 +112,7 @@ Torrent.prototype.xml = function (count) {
     this.list((err, entries) => {
       if (err) return reject(err)
       if (entries.length > count) {
-        entries = entries.filter(e => e.name !== '_meta').sort(byCTimeDESC).slice(0, 10)
+        entries = entries.sort(byCTimeDESC).slice(0, 10)
       }
 
       buildXML(this._archive, this.meta, entries).then(xml => resolve(xml))

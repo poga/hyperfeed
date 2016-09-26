@@ -28,7 +28,7 @@ tape('create archive from rss', function (t) {
   torrent.update(rss).then(torrent => {
     torrent.list((err, entries) => {
       t.error(err)
-      t.same(entries.length, 10 + 1) // 10 feed item and 1 meta file
+      t.same(entries.length, 10)
       t.end()
     })
   })
@@ -40,7 +40,7 @@ tape('push', function (t) {
     torrent.push({title: 'moo', guid: 'x'}).then(torrent => {
       torrent.list((err, entries) => {
         t.error(err)
-        t.same(entries.length, 11 + 1) // 11 feed item and 1 meta file
+        t.same(entries.length, 11)
         t.end()
       })
     })
@@ -64,7 +64,7 @@ tape('create xml', function (t) {
         entries.push(entry)
       })
       parser.on('end', () => {
-        t.same(entries.sort((x, y) => { return x.ctime - y.ctime }).map(x => x.title), testEntries.map(x => x.title))
+        t.same(entries.map(x => x.title).sort(), testEntries.map(x => x.title))
         t.end()
       })
     })
@@ -95,7 +95,7 @@ tape('dedup', function (t) {
   torrent.update(rss).then(torrent => {
     torrent.list((err, entries) => {
       t.error(err)
-      t.same(entries.length, 1 + 1) // 1 feed item and 1 meta file
+      t.same(entries.length, 1)
       t.end()
     })
   })

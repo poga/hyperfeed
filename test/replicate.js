@@ -30,7 +30,7 @@ tape('replicate', function (t) {
     var read = peer.swarm()
     peer.list((err, entries) => {
       t.error(err)
-      t.same(entries.length, 10 + 1) // 10 feed item and 1 meta file
+      t.same(entries.length, 10)
       write.close()
       read.close()
       t.end()
