@@ -34,11 +34,18 @@ tape('create archive from rss', function (t) {
 })
 
 tape('push', function (t) {
+  var feed = new Feed({
+    title: 'test feed',
+    description: 'http://example.com',
+    link: 'http://example.com'
+  })
+  var rss = feed.render('rss-2.0')
   var torrent = new Hyperfeed()
   torrent.update(rss).then(torrent => {
-    torrent.push({title: 'moo', guid: 'x'}).then(torrent => {
+    torrent.push({title: 'moo'}).then(torrent => {
       torrent.list().then(entries => {
-        t.same(entries.length, 11)
+        t.ok(entries[0].name) // should have default name(guid)
+        t.ok(entries[0].ctime) // should have default value
         t.end()
       })
     })

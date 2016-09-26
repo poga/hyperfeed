@@ -8,6 +8,7 @@ const toString = require('stream-to-string')
 const swarm = require('hyperdrive-archive-swarm')
 const request = require('request')
 const moment = require('moment')
+const uuid = require('uuid')
 
 function Torrent (key, opts) {
   if (!(this instanceof Torrent)) return new Torrent(opts)
@@ -83,6 +84,9 @@ Torrent.prototype.setMeta = function (meta) {
 }
 
 Torrent.prototype.push = function (entry) {
+  if (!entry.guid) entry.guid = uuid.v1()
+  if (!entry.date) entry.date = new Date()
+
   return new Promise((resolve, reject) => {
     var tasks = []
 
