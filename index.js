@@ -1,5 +1,5 @@
 const hyperdrive = require('hyperdrive')
-const FeedParser = require('feedparser')
+const HyperfeedParser = require('feedparser')
 const memdb = require('memdb')
 const toStream = require('string-to-stream')
 const async = require('async')
@@ -10,8 +10,8 @@ const request = require('request')
 const moment = require('moment')
 const uuid = require('uuid')
 
-function Torrent (key, opts) {
-  if (!(this instanceof Torrent)) return new Torrent(opts)
+function Hyperfeed (key, opts) {
+  if (!(this instanceof Hyperfeed)) return new Hyperfeed(opts)
 
   if (typeof key === 'object' && !Buffer.isBuffer(key) && key) {
     opts = key
@@ -30,19 +30,19 @@ function Torrent (key, opts) {
   }
 }
 
-Torrent.prototype.key = function () {
+Hyperfeed.prototype.key = function () {
   return this._archive.key
 }
 
-Torrent.prototype.swarm = function (opts) {
+Hyperfeed.prototype.swarm = function (opts) {
   return swarm(this._archive, opts)
 }
 
-Torrent.prototype.update = function (feed) {
-  var torrent = this
+Hyperfeed.prototype.update = function (feed) {
+  var self = this
   return new Promise((resolve, reject) => {
     if (!this.own) return reject(new Error("can't update archive you don't own"))
-    var feedparser = new FeedParser()
+    var feedparser = new HyperfeedParser()
     toStream(feed).pipe(feedparser)
 
     var tasks = []
@@ -51,7 +51,7 @@ Torrent.prototype.update = function (feed) {
       this.meta = meta
 
       tasks.push((cb) => {
-        var ws = torrent._archive.createFileWriteStream('_meta')
+        var ws = self._archive.createFileWriteStream('_meta')
         toStream(JSON.stringify(meta)).pipe(ws).on('finish', cb)
       })
     })
@@ -60,30 +60,30 @@ Torrent.prototype.update = function (feed) {
       var entry
 
       while (entry = readable.read()) {
-        tasks.push(torrent._save(entry))
-        if (torrent.scrap) tasks.push(torrent._scrap(entry))
+        tasks.push(self._save(entry))
+        if (self.scrap) tasks.push(self._scrap(entry))
       }
     })
     feedparser.on('end', function () {
       async.series(tasks, (err, results) => {
         if (err) return reject(err)
-        resolve(torrent)
+        resolve(self)
       })
     })
   })
 }
 
-Torrent.prototype.setMeta = function (meta) {
-  var torrent = this
-  torrent.meta = meta
+Hyperfeed.prototype.setMeta = function (meta) {
+  var self = this
+  self.meta = meta
 
   return new Promise((resolve, reject) => {
-    var ws = torrent._archive.createFileWriteStream('_meta')
-    toStream(JSON.stringify(meta)).pipe(ws).on('finish', () => { resolve(torrent) })
+    var ws = self._archive.createFileWriteStream('_meta')
+    toStream(JSON.stringify(meta)).pipe(ws).on('finish', () => { resolve(self) })
   })
 }
 
-Torrent.prototype.push = function (entry) {
+Hyperfeed.prototype.push = function (entry) {
   if (!entry.guid) entry.guid = uuid.v1()
   if (!entry.date) entry.date = new Date()
 
@@ -100,8 +100,8 @@ Torrent.prototype.push = function (entry) {
   })
 }
 
-Torrent.prototype.list = function (opts) {
-  var torrent = this
+Hyperfeed.prototype.list = function (opts) {
+  var self = this
   return new Promise((resolve, reject) => {
     if (this.own) {
       this._archive.finalize(() => {
@@ -116,7 +116,7 @@ Torrent.prototype.list = function (opts) {
 
       var tasks = []
       results.filter(x => { return x.name !== '_meta' }).forEach(x => {
-        tasks.push(load(torrent._archive, x))
+        tasks.push(load(self._archive, x))
       })
 
       async.parallel(tasks, (err, results) => {
@@ -127,7 +127,7 @@ Torrent.prototype.list = function (opts) {
   })
 }
 
-Torrent.prototype.xml = function (count) {
+Hyperfeed.prototype.xml = function (count) {
   return new Promise((resolve, reject) => {
     this.list((err, entries) => {
       if (err) return reject(err)
@@ -140,7 +140,7 @@ Torrent.prototype.xml = function (count) {
   })
 }
 
-Torrent.prototype._save = function (entry) {
+Hyperfeed.prototype._save = function (entry) {
   return (cb) => {
     this.list((err, entries) => {
       if (err) return cb(err)
@@ -152,7 +152,7 @@ Torrent.prototype._save = function (entry) {
   }
 }
 
-Torrent.prototype._scrap = function (entry) {
+Hyperfeed.prototype._scrap = function (entry) {
   return (cb) => {
     request(entry.url, (err, resp, body) => {
       if (err) return cb(err)
@@ -163,14 +163,14 @@ Torrent.prototype._scrap = function (entry) {
   }
 }
 
-Torrent.prototype._createWriteStream = function (entry) {
+Hyperfeed.prototype._createWriteStream = function (entry) {
   return this._archive.createFileWriteStream({
     name: entry.guid,
     ctime: entry.date ? entry.date.getTime() : 0
   })
 }
 
-module.exports = Torrent
+module.exports = Hyperfeed
 
 function buildXML (archive, meta, entries) {
   return new Promise((resolve, reject) => {
