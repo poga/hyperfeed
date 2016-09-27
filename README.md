@@ -57,7 +57,7 @@ Create a new Hyperfeed instance. If you want to download from an existing feed, 
 
 Start replicating the feed with a swarm p2p network. Peers can download this feed with its key.
 
-Check [https://github.com/karissa/hyperdrive-archive-swarm])(https://github.com/karissa/hyperdrive-archive-swarm) for options.
+Check [https://github.com/karissa/hyperdrive-archive-swarm](https://github.com/karissa/hyperdrive-archive-swarm) for options.
 
 #### `feed.key()`
 
