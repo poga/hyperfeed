@@ -39,6 +39,67 @@ feed.list((err, entries) => {
 })
 ```
 
+## API
+
+#### `new Hyperfeed([key], [options])`
+
+Create a new Hyperfeed instance. If you want to download from an existing feed, pass the feed's key as the first argument. Options include
+
+```js
+{
+  storage: memdb() // a level db instance. default to memdb.
+}
+```
+
+#### `feed.swarm(opts)`
+
+Start replicating the feed with a swarm p2p network. Peers can download this feed with its key.
+
+##### Options
+
+* `signalhub`: the url of the signalhub.
+* `signalhubPrefix`: the prefix for the archive's signalhub key
+* `wrtc`: a webrtc instance, e.g. electron-webrtc, if not natively supported
+* `upload`: bool, upload data to the other peer?
+* `download`: bool, download data from the other peer?
+* `port`: port for discovery swarm
+* `utp`: use utp in discovery swarm
+* `tcp`: use tcp in discovery swarm
+
+Defaults from datland-swarm-defaults can also be overwritten:
+
+* `dns.server`: DNS server
+* `dns.domain`: DNS domain
+* `dht.bootstrap`: distributed hash table bootstrapping nodes
+
+#### `feed.key()`
+
+Returns the 32-bit public key of the feed.
+
+#### `var promise = feed.update(rssXML)`
+
+Parse and save new items from a Feed XML. We support RSS and ATOM.
+
+#### `feed.meta`
+
+Returns the metadata of the feed.
+
+#### `var promise = feed.setMeta(obj)`
+
+Explicitly set the metadata
+
+#### `var promise = feed.push(item)`
+
+Push a new feed item into hyperfeed. Check [https://github.com/jpmonette/feed](https://github.com/jpmonette/feed) for item detail.
+
+#### `var promise = feed.list(opts)`
+
+Returns all items in the hyperfeed, include history.
+
+#### `var promise = feed.xml(count)`
+
+Returns a RSS-2.0 Feed in XML format containing latest `count` items.
+
 ## License
 
 The MIT License
