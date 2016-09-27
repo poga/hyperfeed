@@ -1,8 +1,6 @@
 const tape = require('tape')
 const Hyperfeed = require('..')
 const RSS = require('rss')
-const FeedParser = require('feedparser')
-const toStream = require('string-to-stream')
 
 var feed = new RSS({
   title: 'test feed',

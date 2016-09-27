@@ -59,7 +59,7 @@ Hyperfeed.prototype.update = function (feed) {
       var readable = this
       var entry
 
-      while (entry = readable.read()) {
+      while ((entry = readable.read())) {
         tasks.push(self._save(entry))
         if (self.scrap) tasks.push(self._scrap(entry))
       }
