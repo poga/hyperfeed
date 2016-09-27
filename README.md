@@ -57,22 +57,7 @@ Create a new Hyperfeed instance. If you want to download from an existing feed, 
 
 Start replicating the feed with a swarm p2p network. Peers can download this feed with its key.
 
-##### Options
-
-* `signalhub`: the url of the signalhub.
-* `signalhubPrefix`: the prefix for the archive's signalhub key
-* `wrtc`: a webrtc instance, e.g. electron-webrtc, if not natively supported
-* `upload`: bool, upload data to the other peer?
-* `download`: bool, download data from the other peer?
-* `port`: port for discovery swarm
-* `utp`: use utp in discovery swarm
-* `tcp`: use tcp in discovery swarm
-
-Defaults from datland-swarm-defaults can also be overwritten:
-
-* `dns.server`: DNS server
-* `dns.domain`: DNS domain
-* `dht.bootstrap`: distributed hash table bootstrapping nodes
+Check [https://github.com/karissa/hyperdrive-archive-swarm])(https://github.com/karissa/hyperdrive-archive-swarm) for options.
 
 #### `feed.key()`
 
