@@ -1,5 +1,7 @@
 # Hyperfeed
 
+[![JavaScript Style Guide](https://img.shields.io/badge/code%20style-standard-brightgreen.svg)](http://standardjs.com/)
+
 a self-archiving p2p live RSS feed.
 
 * **Self-archiving**: All published items will be archived. If the feed is updated and doesn't contain old items, Hyperfeed still preserve them.
