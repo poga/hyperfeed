@@ -50,7 +50,8 @@ Create a new Hyperfeed instance. If you want to download from an existing feed, 
 ```js
 {
   storage: memdb(), // a level db instance. default to memdb.
-  file: function (name) { return raf(name) } // set to a raf if you want to save items to filesystem
+  file: function (name) { return raf(name) }, // set to a raf if you want to save items to filesystem
+  scrap: false      // if set to true, hyperfeed will also save the page each item is pointed to.
 }
 ```
 
