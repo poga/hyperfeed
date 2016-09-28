@@ -61,7 +61,6 @@ Hyperfeed.prototype.update = function (feed) {
 
       while ((entry = readable.read())) {
         tasks.push(self._save(entry))
-        if (self.scrap) tasks.push(self._scrap(entry))
       }
     })
     feedparser.on('end', function () {
@@ -91,7 +90,6 @@ Hyperfeed.prototype.push = function (entry) {
     var tasks = []
 
     tasks.push(this._save(entry))
-    if (this.scrap) tasks.push(this._scrap(entry))
 
     async.series(tasks, (err, results) => {
       if (err) return reject(new Error('archive failed'))
@@ -141,20 +139,27 @@ Hyperfeed.prototype.xml = function (count) {
 }
 
 Hyperfeed.prototype._save = function (entry) {
+  var feed = this
   return (cb) => {
     this.list((err, entries) => {
       if (err) return cb(err)
       if (entries.find(x => x.name === entry.guid)) return cb() // ignore duplicated entry
       if (!entry.guid) return cb(new Error('GUID not found'))
 
-      toStream(JSON.stringify(entry)).pipe(this._createWriteStream(entry)).on('finish', cb)
+      toStream(JSON.stringify(entry)).pipe(this._createWriteStream(entry)).on('finish', done)
     })
+
+    function done () {
+      if (feed.scrap) return feed._scrap(entry)(cb)
+      return cb()
+    }
   }
 }
 
 Hyperfeed.prototype._scrap = function (entry) {
   return (cb) => {
-    request(entry.url, (err, resp, body) => {
+    var url = entry.url || entry.link
+    request(url, (err, resp, body) => {
       if (err) return cb(err)
       if (resp.statusCode !== 200) return cb(new Error('invalid status code'))
 
