@@ -124,8 +124,8 @@ Hyperfeed.prototype.list = function (opts) {
         .sort(byCTimeDESC)
         .slice(opts.offset, opts.offset + opts.limit)
         .forEach(x => {
-        tasks.push(load(self._archive, x))
-      })
+          tasks.push(load(self._archive, x))
+        })
 
       async.parallel(tasks, (err, results) => {
         if (err) return reject(err)
