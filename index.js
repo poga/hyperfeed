@@ -21,11 +21,14 @@ function Hyperfeed (key, opts) {
   if (!opts.storage) opts.storage = memdb()
   this.scrap = opts.scrap
   this._drive = hyperdrive(opts.storage)
+
+  var archiveOpts
+  if (opts.file) archiveOpts = {file: opts.file}
   if (key) {
-    this._archive = this._drive.createArchive(key)
+    this._archive = this._drive.createArchive(key, archiveOpts)
     this.own = false
   } else {
-    this._archive = this._drive.createArchive()
+    this._archive = this._drive.createArchive(archiveOpts)
     this.own = true
   }
 }

@@ -27,6 +27,7 @@
     "uuid": "^2.0.3"
   },
   "devDependencies": {
+    "random-access-file": "^1.3.1",
     "tap-dot": "^1.0.5",
     "tape": "^4.6.0"
   }

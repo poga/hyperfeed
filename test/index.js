@@ -1,8 +1,10 @@
 const tape = require('tape')
+const fs = require('fs')
 const Hyperfeed = require('..')
 const Feed = require('feed')
 const FeedParser = require('feedparser')
 const toStream = require('string-to-stream')
+const raf = require('random-access-file')
 
 var feed = new Feed({
   title: 'test feed',
@@ -134,3 +136,13 @@ tape('set meta', function (t) {
   })
 })
 
+tape('raf', function (t) {
+  var torrent = new Hyperfeed({file: function (name) { return raf('test/' + name) }})
+  torrent.update(rss).then(torrent => {
+    fs.stat('test/id-0', (err, stats) => {
+      t.error(err)
+      t.ok(stats)
+      t.end()
+    })
+  })
+})
