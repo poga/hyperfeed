@@ -60,7 +60,7 @@ where raf is
 const raf = require('random-access-file')
 ```
 
-#### `feed.swarm(opts)`
+#### `feed.swarm([opts])`
 
 Start replicating the feed with a swarm p2p network. Peers can download this feed with its key.
 
