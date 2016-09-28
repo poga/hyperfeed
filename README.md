@@ -50,7 +50,14 @@ Create a new Hyperfeed instance. If you want to download from an existing feed, 
 ```js
 {
   storage: memdb() // a level db instance. default to memdb.
+  file: function (name) { return raf(name) } // set to a raf if you want to save items to filesystem
 }
+```
+
+where raf is
+
+```js
+const raf = require('random-access-file')
 ```
 
 #### `feed.swarm(opts)`
