@@ -137,8 +137,7 @@ Hyperfeed.prototype.list = function (opts) {
 
 Hyperfeed.prototype.xml = function (count) {
   return new Promise((resolve, reject) => {
-    this.list((err, entries) => {
-      if (err) return reject(err)
+    this.list().then(entries => {
       if (entries.length > count) {
         entries = entries.sort(byCTimeDESC).slice(0, 10)
       }
@@ -151,9 +150,8 @@ Hyperfeed.prototype.xml = function (count) {
 Hyperfeed.prototype._save = function (entry) {
   var feed = this
   return (cb) => {
-    this.list((err, entries) => {
-      if (err) return cb(err)
-      if (entries.find(x => x.name === entry.guid)) return cb() // ignore duplicated entry
+    this.list().then(entries => {
+      if (entries.find(x => x.guid === entry.guid)) return cb() // ignore duplicated entry
       if (!entry.guid) return cb(new Error('GUID not found'))
 
       toStream(JSON.stringify(entry)).pipe(this._createWriteStream(entry)).on('finish', done)
@@ -190,16 +188,11 @@ module.exports = Hyperfeed
 function buildXML (archive, meta, entries) {
   return new Promise((resolve, reject) => {
     var feed = new Feed(Object.assign(meta, {feed_url: meta.xmlUrl, site_url: meta.link}))
-    var tasks = []
-    entries.forEach(e => {
-      tasks.push(load(archive, e))
-    })
 
-    async.parallel(tasks, (err, results) => {
-      if (err) return reject(err)
-      results.forEach(r => feed.addItem(r))
-      resolve(feed.render('rss-2.0'))
+    entries.forEach(e => {
+      feed.addItem(e)
     })
+    resolve(feed.render('rss-2.0'))
   })
 }
 
