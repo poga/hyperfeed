@@ -25,10 +25,11 @@ for (var i = 0; i < 10; i++) {
 }
 var rss = feed.render('rss-2.0')
 
-tape('create archive from rss', function (t) {
+tape('list', function (t) {
   var torrent = new Hyperfeed()
   torrent.update(rss).then(torrent => {
-    torrent.list().then(entries => {
+    torrent.list((err, entries) => {
+      t.error(err)
       t.same(entries.length, 10)
       t.end()
     })
@@ -45,10 +46,65 @@ tape('push', function (t) {
   var torrent = new Hyperfeed()
   torrent.update(rss).then(torrent => {
     torrent.push({title: 'moo'}).then(torrent => {
-      torrent.list().then(entries => {
-        t.ok(entries[0].guid) // should have default name(guid)
-        t.ok(entries[0].date) // should have default value
-        t.end()
+      torrent.list((err, entries) => {
+        t.error(err)
+        torrent.load(entries[0]).then(item => {
+          t.error(err)
+
+          t.ok(item.guid) // should have default name(guid)
+          t.ok(item.date) // should have default value
+          t.end()
+        })
+      })
+    })
+  })
+})
+
+tape('live list', function (t) {
+  var torrent = new Hyperfeed()
+  torrent.update(rss).then(torrent => {
+    var list = torrent.list({live: true})
+    t.ok(list)
+    var count = 0
+    list.on('data', entry => {
+      count += 1
+      if (count === 11) t.end() // should include newly pushed items
+    })
+    torrent.push({title: 'moo'})
+  })
+})
+
+tape('non-live list', function (t) {
+  var torrent = new Hyperfeed()
+  torrent.update(rss).then(torrent => {
+    var list = torrent.list()
+    t.ok(list)
+    var count = 0
+    list.on('data', entry => {
+      count += 1
+    })
+    list.on('end', () => {
+      console.log('end')
+      t.same(count, 10)
+      t.end()
+    })
+  })
+})
+
+tape('load', function (t) {
+  var torrent = new Hyperfeed()
+  torrent.update(rss).then(torrent => {
+    torrent.list((err, entries) => {
+      t.error(err)
+      t.same(entries.length, 10)
+      var count = 0
+      entries.forEach(e => {
+        torrent.load(e).then(item => {
+          t.error(err)
+          t.same(item.guid, e.name)
+          count += 1
+          if (count === 10) t.end()
+        })
       })
     })
   })
@@ -100,7 +156,8 @@ tape('dedup', function (t) {
 
   var torrent = new Hyperfeed()
   torrent.update(rss).then(torrent => {
-    torrent.list().then(entries => {
+    torrent.list((err, entries) => {
+      t.error(err)
       t.same(entries.length, 1)
       t.end()
     })
@@ -147,32 +204,3 @@ tape('raf', function (t) {
   })
 })
 
-tape('limit', function (t) {
-  var torrent = new Hyperfeed()
-  torrent.update(rss).then(torrent => {
-    torrent.list({limit: 1}).then(entries => {
-      t.same(entries.length, 1)
-      t.end()
-    })
-  })
-})
-
-tape('offset', function (t) {
-  var torrent = new Hyperfeed()
-  torrent.update(rss).then(torrent => {
-    torrent.list({offset: 1}).then(entries => {
-      t.same(entries.length, 9)
-      t.end()
-    })
-  })
-})
-
-tape('limit and offset', function (t) {
-  var torrent = new Hyperfeed()
-  torrent.update(rss).then(torrent => {
-    torrent.list({offset: 2, limit: 2}).then(entries => {
-      t.same(entries.length, 2)
-      t.end()
-    })
-  })
-})

@@ -9,6 +9,8 @@ const swarm = require('hyperdrive-archive-swarm')
 const request = require('request')
 const moment = require('moment')
 const uuid = require('uuid')
+const through2 = require('through2')
+const pump = require('pump')
 
 function Hyperfeed (key, opts) {
   if (!(this instanceof Hyperfeed)) return new Hyperfeed(opts)
@@ -101,48 +103,53 @@ Hyperfeed.prototype.push = function (entry) {
   })
 }
 
-Hyperfeed.prototype.list = function (opts) {
+Hyperfeed.prototype.list = function (opts, cb) {
+  if (typeof opts === 'function') {
+    cb = opts
+    opts = {}
+  }
+
   if (!opts) opts = {}
-  if (!opts.limit) opts.limit = 20
-  if (!opts.offset) opts.offset = 0
-  var self = this
-  return new Promise((resolve, reject) => {
-    if (this.own) {
-      this._archive.finalize(() => {
-        this._archive.list(opts, done)
-      })
-    } else {
-      this._archive.list(opts, done)
+  if (!opts.live) opts.live = false
+
+  var done
+  if (cb) {
+    done = (err, results) => {
+      console.log('done')
+      if (err) return cb(err)
+
+      cb(null, results.filter(x => { return x.name !== '_meta' }))
     }
-
-    function done (err, results) {
-      if (err) return reject(err)
-
-      var tasks = []
-      results
-        .filter(x => { return x.name !== '_meta' })
-        .sort(byCTimeDESC)
-        .slice(opts.offset, opts.offset + opts.limit)
-        .forEach(x => {
-          tasks.push(load(self._archive, x))
-        })
-
-      async.parallel(tasks, (err, results) => {
-        if (err) return reject(err)
-        resolve(results)
-      })
-    }
+  }
+  var rs = through2.obj(function (obj, enc, next) {
+    if (obj.name !== '_meta') this.push(obj)
+    next()
   })
+  if (this.own) {
+    this._archive.finalize(() => {
+      pump(this._archive.list(opts, done), rs)
+    })
+  } else {
+    pump(this._archive.list(opts, done), rs)
+  }
+
+  return rs
 }
 
 Hyperfeed.prototype.xml = function (count) {
   return new Promise((resolve, reject) => {
-    this.list().then(entries => {
+    this.list((err, entries) => {
+      if (err) return reject(err)
       if (entries.length > count) {
         entries = entries.sort(byCTimeDESC).slice(0, 10)
       }
+      var tasks = []
+      entries.forEach(e => { tasks.push(this._load(e)) })
 
-      buildXML(this._archive, this.meta, entries).then(xml => resolve(xml))
+      async.series(tasks, (err, results) => {
+        if (err) return reject(err)
+        buildXML(this._archive, this.meta, results).then(xml => resolve(xml))
+      })
     })
   })
 }
@@ -150,8 +157,9 @@ Hyperfeed.prototype.xml = function (count) {
 Hyperfeed.prototype._save = function (entry) {
   var feed = this
   return (cb) => {
-    this.list().then(entries => {
-      if (entries.find(x => x.guid === entry.guid)) return cb() // ignore duplicated entry
+    this.list((err, entries) => {
+      if (err) return cb(err)
+      if (entries.find(x => x.name === entry.guid)) return cb() // ignore duplicated entry
       if (!entry.guid) return cb(new Error('GUID not found'))
 
       toStream(JSON.stringify(entry)).pipe(this._createWriteStream(entry)).on('finish', done)
@@ -183,6 +191,29 @@ Hyperfeed.prototype._createWriteStream = function (entry) {
   })
 }
 
+Hyperfeed.prototype.load = function (entry) {
+  return new Promise((resolve, reject) => {
+    this._load(entry)((err, item) => {
+      if (err) return reject(err)
+
+      resolve(item)
+    })
+  })
+}
+
+Hyperfeed.prototype._load = function (entry) {
+  return (cb) => {
+    var rs = this._archive.createFileReadStream(entry)
+    toString(rs, (err, str) => {
+      if (err) return cb(err)
+
+      var item = JSON.parse(str)
+      item.date = moment(item.date).toDate()
+      cb(null, item)
+    })
+  }
+}
+
 module.exports = Hyperfeed
 
 function buildXML (archive, meta, entries) {
@@ -200,15 +231,3 @@ function byCTimeDESC (x, y) {
   return y.ctime - x.ctime
 }
 
-function load (archive, entry) {
-  return (cb) => {
-    var rs = archive.createFileReadStream(entry)
-    toString(rs, (err, str) => {
-      if (err) return cb(err)
-
-      var item = JSON.parse(str)
-      item.date = moment(item.date).toDate()
-      cb(null, item)
-    })
-  }
-}

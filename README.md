@@ -86,18 +86,26 @@ Explicitly set the metadata
 
 Push a new feed item into hyperfeed. Check [https://github.com/jpmonette/feed](https://github.com/jpmonette/feed) for item detail.
 
-#### `var promise = feed.list([opts])`
+#### `var stream = feed.list([opts], [cb])`
 
-Returns items in the hyperfeed, include history.
-
-Options include
+Returns a readable stream of all entries in the archive, include history
 
 ```js
 {
-  limit: 20, // how many items will be returned
-  offset: 0 // how many items should be skipped before returning
+  offset: 0 // start streaming from this offset (default: 0)
+  live: false // keep the stream open as new updates arrive (default: false)
 }
 ```
+
+You can collect the results of the stream with cb(err, entries).
+
+**Entries are metadata of feed items. If you want to get the feed item itself, call `feed.load(entry)`**
+
+#### `var promise = feed.load(entry)`
+
+Returns a Feed item from given entry.
+
+`entry` is an object returned by `#list()`
 
 #### `var promise = feed.xml(count)`
 
