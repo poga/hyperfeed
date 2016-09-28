@@ -49,7 +49,7 @@ Create a new Hyperfeed instance. If you want to download from an existing feed, 
 
 ```js
 {
-  storage: memdb() // a level db instance. default to memdb.
+  storage: memdb(), // a level db instance. default to memdb.
   file: function (name) { return raf(name) } // set to a raf if you want to save items to filesystem
 }
 ```
@@ -86,9 +86,18 @@ Explicitly set the metadata
 
 Push a new feed item into hyperfeed. Check [https://github.com/jpmonette/feed](https://github.com/jpmonette/feed) for item detail.
 
-#### `var promise = feed.list()`
+#### `var promise = feed.list([opts])`
 
-Returns all items in the hyperfeed, include history.
+Returns items in the hyperfeed, include history.
+
+Options include
+
+```js
+{
+  limit: 20, // how many items will be returned
+  offset: 0 // how many items should be skipped before returning
+}
+```
 
 #### `var promise = feed.xml(count)`
 

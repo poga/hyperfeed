@@ -146,3 +146,33 @@ tape('raf', function (t) {
     })
   })
 })
+
+tape('limit', function (t) {
+  var torrent = new Hyperfeed()
+  torrent.update(rss).then(torrent => {
+    torrent.list({limit: 1}).then(entries => {
+      t.same(entries.length, 1)
+      t.end()
+    })
+  })
+})
+
+tape('offset', function (t) {
+  var torrent = new Hyperfeed()
+  torrent.update(rss).then(torrent => {
+    torrent.list({offset: 1}).then(entries => {
+      t.same(entries.length, 9)
+      t.end()
+    })
+  })
+})
+
+tape('limit and offset', function (t) {
+  var torrent = new Hyperfeed()
+  torrent.update(rss).then(torrent => {
+    torrent.list({offset: 2, limit: 2}).then(entries => {
+      t.same(entries.length, 2)
+      t.end()
+    })
+  })
+})

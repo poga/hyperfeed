@@ -102,6 +102,9 @@ Hyperfeed.prototype.push = function (entry) {
 }
 
 Hyperfeed.prototype.list = function (opts) {
+  if (!opts) opts = {}
+  if (!opts.limit) opts.limit = 20
+  if (!opts.offset) opts.offset = 0
   var self = this
   return new Promise((resolve, reject) => {
     if (this.own) {
@@ -116,7 +119,11 @@ Hyperfeed.prototype.list = function (opts) {
       if (err) return reject(err)
 
       var tasks = []
-      results.filter(x => { return x.name !== '_meta' }).forEach(x => {
+      results
+        .filter(x => { return x.name !== '_meta' })
+        .sort(byCTimeDESC)
+        .slice(opts.offset, opts.offset + opts.limit)
+        .forEach(x => {
         tasks.push(load(self._archive, x))
       })
 
