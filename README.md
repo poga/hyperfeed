@@ -72,7 +72,7 @@ Returns the 32-bit public key of the feed.
 
 #### `var promise = feed.update(rssXML)`
 
-Parse and save new items from a Feed XML. We support RSS and ATOM.
+Parse and save new items from a Feed XML. We support RSS, ATOM, and RDF feeds.
 
 #### `feed.meta`
 
@@ -86,7 +86,7 @@ Explicitly set the metadata
 
 Push a new feed item into hyperfeed. Check [https://github.com/jpmonette/feed](https://github.com/jpmonette/feed) for item detail.
 
-#### `var promise = feed.list(opts)`
+#### `var promise = feed.list()`
 
 Returns all items in the hyperfeed, include history.
 
