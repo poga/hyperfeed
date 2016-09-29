@@ -115,7 +115,6 @@ Hyperfeed.prototype.list = function (opts, cb) {
   var done
   if (cb) {
     done = (err, results) => {
-      console.log('done')
       if (err) return cb(err)
 
       cb(null, results.filter(x => { return x.name !== '_meta' }))
