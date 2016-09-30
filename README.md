@@ -1,11 +1,12 @@
 # Hyperfeed
 
-[![JavaScript Style Guide](https://img.shields.io/badge/code%20style-standard-brightgreen.svg)](http://standardjs.com/) [![NPM Version](https://img.shields.io/npm/v/hyperfeed.svg)](https://www.npmjs.com/package/hyperfeed)
+[![NPM Version](https://img.shields.io/npm/v/hyperfeed.svg)](https://www.npmjs.com/package/hyperfeed) [![JavaScript Style Guide](https://img.shields.io/badge/code%20style-standard-brightgreen.svg)](http://standardjs.com/)
 
-Hyperfed is a self-archiving P2P live feed. You can convert any RSS/ATOM/RDF Feed into a P2P live update publishing network.
+Hyperfed is a self-archiving P2P live feed. You can convert any RSS/ATOM/RDF Feed to a P2P live update publishing network.
 
 * **Self-archiving**: All published items will be archived. If the feed is updated and doesn't contain old items, Hyperfeed still preserve them.
-* **P2P Live**: No need to constantly scrap a RSS feed, Updates will be pushed to you.
+* **P2P**: Feed items are distributed in a P2P manner. Save bandwidth and support offline mode.
+* **Live**: No need to constantly scrap a RSS feed, Updates will be pushed to you.
 * **Secure**: All items are verified via publisher's public key.
 
 ```
