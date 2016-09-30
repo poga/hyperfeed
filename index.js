@@ -111,14 +111,6 @@ Hyperfeed.prototype.list = function (opts, cb) {
   if (!opts) opts = {}
   if (!opts.live) opts.live = false
 
-  var done
-  if (cb) {
-    done = (err, results) => {
-      if (err) return cb(err)
-
-      cb(null, results.filter(x => { return x.name !== '_meta' }))
-    }
-  }
   var rs = through2.obj(function (obj, enc, next) {
     if (obj.name !== '_meta') this.push(obj)
     next()
@@ -131,13 +123,16 @@ Hyperfeed.prototype.list = function (opts, cb) {
     }
   }
   finalize(() => {
-    if (done) {
-      this._archive.list(opts, done)
+    if (cb) {
+      this._archive.list(opts, (err, results) => {
+        if (err) return cb(err)
+
+        cb(null, results.filter(x => { return x.name !== '_meta' }))
+      })
     } else {
       this._archive.list(opts).pipe(rs)
     }
   })
-
   return rs
 }
 
