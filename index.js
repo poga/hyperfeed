@@ -10,7 +10,6 @@ const request = require('request')
 const moment = require('moment')
 const uuid = require('uuid')
 const through2 = require('through2')
-const pump = require('pump')
 
 function Hyperfeed (key, opts) {
   if (!(this instanceof Hyperfeed)) return new Hyperfeed(opts)
@@ -133,9 +132,9 @@ Hyperfeed.prototype.list = function (opts, cb) {
   }
   finalize(() => {
     if (done) {
-      return this._archive.list(opts, done)
+      this._archive.list(opts, done)
     } else {
-      pump(this._archive.list(opts), rs)
+      this._archive.list(opts).pipe(rs)
     }
   })
 
