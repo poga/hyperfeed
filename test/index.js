@@ -25,13 +25,58 @@ for (var i = 0; i < 10; i++) {
 }
 var rss = feed.render('rss-2.0')
 
-tape('list', function (t) {
+tape('update & list', function (t) {
   var torrent = new Hyperfeed()
   torrent.update(rss).then(torrent => {
     torrent.list((err, entries) => {
       t.error(err)
       t.same(entries.length, 10)
       t.end()
+    })
+  })
+})
+
+tape('multiple update', function (t) {
+  var feed2 = new Feed({
+    title: 'test feed',
+    description: 'http://example.com',
+    link: 'http://example.com'
+  })
+  for (var i = 0; i < 10; i++) {
+    var x = {
+      title: `entry${i}`,
+      description: `desc${i}`,
+      url: 'example.com',
+      guid: `id-${i}`,
+      date: new Date()
+    }
+    feed2.addItem(x)
+  }
+  var torrent = new Hyperfeed()
+  torrent.update(rss).then(torrent => {
+    // update with same xml
+    torrent.update(feed2.render('rss-2.0')).then(torrent => {
+      torrent.list((err, entries) => {
+        t.error(err)
+        t.same(entries.length, 10)
+
+        // update with xml + 1 new item
+        var x = {
+          title: `entry${10}`,
+          description: `desc${10}`,
+          url: 'example.com',
+          guid: `id-${10}`,
+          date: new Date()
+        }
+        feed2.addItem(x)
+        torrent.update(feed2.render('rss-2.0')).then(torrent => {
+          torrent.list((err, entries) => {
+            t.error(err)
+            t.same(entries.length, 11)
+            t.end()
+          })
+        })
+      })
     })
   })
 })
