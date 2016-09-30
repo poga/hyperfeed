@@ -84,7 +84,6 @@ tape('non-live list', function (t) {
       count += 1
     })
     list.on('end', () => {
-      console.log('end')
       t.same(count, 10)
       t.end()
     })

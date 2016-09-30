@@ -69,7 +69,7 @@ Hyperfeed.prototype.update = function (feed) {
       }
     })
     feedparser.on('end', function () {
-      async.series(tasks, (err, results) => {
+      async.series(tasks, (err) => {
         if (err) return reject(err)
         resolve(self)
       })
@@ -124,13 +124,20 @@ Hyperfeed.prototype.list = function (opts, cb) {
     if (obj.name !== '_meta') this.push(obj)
     next()
   })
-  if (this.own) {
-    this._archive.finalize(() => {
-      pump(this._archive.list(opts, done), rs)
-    })
-  } else {
-    pump(this._archive.list(opts, done), rs)
+  var finalize = function (cb) {
+    if (this.own) {
+      this._archive.finalize(cb)
+    } else {
+      cb()
+    }
   }
+  finalize(() => {
+    if (done) {
+      return this._archive.list(opts, done)
+    } else {
+      pump(this._archive.list(opts), rs)
+    }
+  })
 
   return rs
 }
