@@ -1,5 +1,5 @@
 const hyperdrive = require('hyperdrive')
-const HyperfeedParser = require('feedparser')
+const FeedParser = require('feedparser')
 const memdb = require('memdb')
 const toStream = require('string-to-stream')
 const async = require('async')
@@ -47,7 +47,7 @@ Hyperfeed.prototype.update = function (feed) {
   var self = this
   return new Promise((resolve, reject) => {
     if (!this.own) return reject(new Error("can't update archive you don't own"))
-    var feedparser = new HyperfeedParser()
+    var feedparser = new FeedParser()
     toStream(feed).pipe(feedparser)
 
     var tasks = []
