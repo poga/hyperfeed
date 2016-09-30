@@ -34,6 +34,10 @@ function Hyperfeed (key, opts) {
   }
 }
 
+Hyperfeed.prototype.open = function (cb) {
+  this._archive.open(cb)
+}
+
 Hyperfeed.prototype.key = function () {
   return this._archive.key
 }
