@@ -74,6 +74,30 @@ tape('live list', function (t) {
   })
 })
 
+tape('nested live and non-live list', function (t) {
+  var torrent = new Hyperfeed()
+  torrent.update(rss).then(torrent => {
+    var list = torrent.list({live: true})
+    t.ok(list)
+    var count = 0
+    list.on('data', entry => {
+      count += 1
+      if (count === 11) { // should include newly pushed items
+        var list2 = torrent.list()
+        var count2 = 0
+        list2.on('data', entry => {
+          count2 += 1
+        })
+        list2.on('end', entry => {
+          t.same(count2, 11)
+          t.end()
+        })
+      }
+    })
+    torrent.push({title: 'moo'})
+  })
+})
+
 tape('non-live list', function (t) {
   var torrent = new Hyperfeed()
   torrent.update(rss).then(torrent => {
