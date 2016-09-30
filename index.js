@@ -23,8 +23,8 @@ function Hyperfeed (key, opts) {
   this.scrap = opts.scrap
   this._drive = hyperdrive(opts.storage)
 
-  var archiveOpts
-  if (opts.file) archiveOpts = {file: opts.file, sparse: true}
+  var archiveOpts = {live: true, sparse: true}
+  if (opts.file) archiveOpts.file = opts.file
   if (key) {
     this._archive = this._drive.createArchive(key, archiveOpts)
     this.own = false
