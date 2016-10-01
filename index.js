@@ -27,16 +27,15 @@ function Hyperfeed (key, opts) {
   if (opts.file) archiveOpts.file = opts.file
   if (key) {
     this._archive = this._drive.createArchive(key, archiveOpts)
+    this.own = false
   } else {
     this._archive = this._drive.createArchive(archiveOpts)
+    this.own = true
   }
 }
 
 Hyperfeed.prototype.open = function (cb) {
-  this._archive.open(() => {
-    this.own = this._archive.owner
-    cb()
-  })
+  this._archive.open(cb)
 }
 
 Hyperfeed.prototype.key = function () {
