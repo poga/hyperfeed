@@ -27,15 +27,13 @@ function Hyperfeed (key, opts) {
   if (opts.file) archiveOpts.file = opts.file
   if (key) {
     this._archive = this._drive.createArchive(key, archiveOpts)
-    this.own = false
   } else {
     this._archive = this._drive.createArchive(archiveOpts)
-    this.own = true
   }
 }
 
-Hyperfeed.prototype.open = function (cb) {
-  this._archive.open(cb)
+Hyperfeed.prototype.own = function () {
+  return this._archive.owner
 }
 
 Hyperfeed.prototype.key = function () {
@@ -49,7 +47,7 @@ Hyperfeed.prototype.swarm = function (opts) {
 Hyperfeed.prototype.update = function (feed) {
   var self = this
   return new Promise((resolve, reject) => {
-    if (!this.own) return reject(new Error("can't update archive you don't own"))
+    if (!this.own()) return reject(new Error("can't update archive you don't own"))
     var feedparser = new FeedParser()
     toStream(feed).pipe(feedparser)
 
@@ -119,8 +117,8 @@ Hyperfeed.prototype.list = function (opts, cb) {
     if (obj.name !== '_meta') this.push(obj)
     next()
   })
-  var finalize = function (cb) {
-    if (this.own) {
+  var finalize = (cb) => {
+    if (this.own()) {
       this._archive.finalize(cb)
     } else {
       cb()
