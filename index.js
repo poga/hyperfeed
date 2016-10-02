@@ -22,6 +22,8 @@ function Hyperfeed (key, opts) {
   if (!opts.storage) opts.storage = memdb()
   this.scrap = opts.scrap
   this._drive = hyperdrive(opts.storage)
+  if (key && opts.own === undefined) throw (new Error('need to explicit specify ownership if key is given'))
+  this.own = key ? !!opts.own : true
 
   var archiveOpts = {live: true, sparse: true}
   if (opts.file) archiveOpts.file = opts.file
@@ -30,10 +32,6 @@ function Hyperfeed (key, opts) {
   } else {
     this._archive = this._drive.createArchive(archiveOpts)
   }
-}
-
-Hyperfeed.prototype.own = function () {
-  return this._archive.owner
 }
 
 Hyperfeed.prototype.key = function () {
@@ -47,7 +45,7 @@ Hyperfeed.prototype.swarm = function (opts) {
 Hyperfeed.prototype.update = function (feed) {
   var self = this
   return new Promise((resolve, reject) => {
-    if (!this.own()) return reject(new Error("can't update archive you don't own"))
+    if (!this.own) return reject(new Error("can't update archive you don't own"))
     var feedparser = new FeedParser()
     toStream(feed).pipe(feedparser)
 
@@ -118,7 +116,7 @@ Hyperfeed.prototype.list = function (opts, cb) {
     next()
   })
   var finalize = (cb) => {
-    if (this.own()) {
+    if (this.own) {
       this._archive.finalize(cb)
     } else {
       cb()

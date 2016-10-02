@@ -5,6 +5,7 @@ const Feed = require('feed')
 const FeedParser = require('feedparser')
 const toStream = require('string-to-stream')
 const raf = require('random-access-file')
+const memdb = require('memdb')
 
 var feed = new Feed({
   title: 'test feed',
@@ -24,6 +25,22 @@ for (var i = 0; i < 10; i++) {
   feed.addItem(x)
 }
 var rss = feed.render('rss-2.0')
+
+tape('owner', function (t) {
+  var db = memdb()
+  var torrent = new Hyperfeed({storage: db})
+  t.same(torrent.own, true)
+  var t2 = new Hyperfeed(torrent.key(), {own: true, storage: db})
+  t.same(t2.own, true)
+  t.end()
+})
+
+tape('not owner', function (t) {
+  var key = '8a2b34a78d9f940c6379f5a6cabd673bf722ea45025a6db5e8e7a94bd3517dc9' // random key
+  var torrent = new Hyperfeed(key, {own: false})
+  t.same(torrent.own, false)
+  t.end()
+})
 
 tape('update & list', function (t) {
   var torrent = new Hyperfeed()
