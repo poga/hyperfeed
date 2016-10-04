@@ -1,6 +1,6 @@
 {
   "name": "hyperfeed",
-  "version": "1.15.1",
+  "version": "1.16.0",
   "description": "self-archiving p2p live RSS feed",
   "main": "index.js",
   "scripts": {
