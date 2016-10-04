@@ -18,11 +18,10 @@ host a feed:
 
 ```js
 const request = require('request')
-const Hyperfeed = require('hyperfeed')
+const hyperfeed = require('hyperfeed')
 
 request('https://medium.com/feed/google-developers', (err, resp, body) => {
-  var feed = new Hyperfeed()
-  feed.update(body).then(feed => {
+  hyperfeed().createFeed.update(body).then(feed => {
     feed.swarm() // share it through a p2p network
     console.log(feed.key().toString('hex')) // this will be the key for discovering
   })
@@ -33,10 +32,8 @@ download feed from peer
 
 ```js
 const Hyperfeed = require('hyperfeed')
-const hyperdrive = require('hyperdrive')
-const memdb = require('memdb')
 
-var feed = new Hyperfeed(hyperdrive(memdb()), <KEY FROM ABOVE>, {own: false})
+var feed = hyperfeed().createFeed(<KEY FROM ABOVE>, {own: false})
 feed.swarm() // load the feed from the p2p network
 feed.list((err, entries) => {
   console.log(entries) // all entries in the feed (include history entries)
@@ -45,15 +42,17 @@ feed.list((err, entries) => {
 
 ## API
 
-#### `new Hyperfeed([drive], [key], [options])`
+#### `var hf = hyperfeed([drive])`
+
+Create a new Hyperfeed instance. If you want to reuse an existing hyperdrive, pass it as argument.
+
+#### `var feed = hf.createFeed([key], [opts])`
 
 Create a new Hyperfeed instance. If you want to download from an existing feed, pass the feed's key as the first argument. Options include
 
-`drive` is an instance of `hyperdrive`
-
 ```js
 {
-  own: boolean, // REQUIRED, set to true if this is a hyperfeed you created (in the same storage) before.
+  own: boolean, // REQUIRED if `key` is not null. Set to true if this is a hyperfeed you created (in the same storage) before.
   file: function (name) { return raf(name) }, // set to a raf if you want to save items to filesystem
   scrap: false      // if set to true, hyperfeed will also save the page each feed item pointed to.
 }
