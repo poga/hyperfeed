@@ -34,8 +34,10 @@ download feed from peer
 
 ```js
 const Hyperfeed = require('hyperfeed')
+const hyperdrive = require('hyperdrive')
+const memdb = require('memdb')
 
-var feed = new Hyperfeed(<KEY FROM ABOVE>, {own: false})
+var feed = new Hyperfeed(hyperdrive(memdb()), <KEY FROM ABOVE>, {own: false})
 feed.swarm() // load the feed from the p2p network
 feed.list((err, entries) => {
   console.log(entries) // all entries in the feed (include history entries)
@@ -44,14 +46,15 @@ feed.list((err, entries) => {
 
 ## API
 
-#### `new Hyperfeed([key], [options])`
+#### `new Hyperfeed([drive], [key], [options])`
 
 Create a new Hyperfeed instance. If you want to download from an existing feed, pass the feed's key as the first argument. Options include
+
+`drive` is an instance of `hyperdrive`
 
 ```js
 {
   own: boolean, // REQUIRED, set to true if this is a hyperfeed you created (in the same storage) before.
-  storage: memdb(), // a level db instance. default to memdb(no persistent).
   file: function (name) { return raf(name) }, // set to a raf if you want to save items to filesystem
   scrap: false      // if set to true, hyperfeed will also save the page each feed item pointed to.
 }

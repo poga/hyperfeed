@@ -1,6 +1,8 @@
 const tape = require('tape')
 const Hyperfeed = require('..')
+const hyperdrive = require('hyperdrive')
 const RSS = require('rss')
+const memdb = require('memdb')
 
 var feed = new RSS({
   title: 'test feed',
@@ -24,7 +26,8 @@ tape('replicate', function (t) {
   var torrent = new Hyperfeed()
   var write = torrent.swarm()
   torrent.update(feed.xml()).then(torrent => {
-    var peer = new Hyperfeed(torrent.key(), {own: false})
+    var drive = hyperdrive(memdb())
+    var peer = new Hyperfeed(drive, torrent.key(), {own: false})
     var read = peer.swarm()
     peer.list((err, entries) => {
       t.error(err)

@@ -11,18 +11,20 @@ const moment = require('moment')
 const uuid = require('uuid')
 const through2 = require('through2')
 
-function Hyperfeed (key, opts) {
+function Hyperfeed (drive, key, opts) {
   if (!(this instanceof Hyperfeed)) return new Hyperfeed(opts)
 
   if (typeof key === 'object' && !Buffer.isBuffer(key) && key) {
     opts = key
     key = null
   }
+
   if (!opts) opts = {}
-  if (!opts.storage) opts.storage = memdb()
-  this.scrap = opts.scrap
-  this._drive = hyperdrive(opts.storage)
+  if (!drive) drive = hyperdrive(memdb())
   if (key && opts.own === undefined) throw (new Error('need to explicit specify ownership if key is given'))
+
+  this.scrap = opts.scrap
+  this._drive = drive
   this.own = key ? !!opts.own : true
 
   var archiveOpts = {live: true, sparse: true}

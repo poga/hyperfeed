@@ -1,5 +1,6 @@
 const tape = require('tape')
 const fs = require('fs')
+const hyperdrive = require('hyperdrive')
 const Hyperfeed = require('..')
 const Feed = require('feed')
 const FeedParser = require('feedparser')
@@ -26,18 +27,32 @@ for (var i = 0; i < 10; i++) {
 }
 var rss = feed.render('rss-2.0')
 
+tape('reopen and list', function (t) {
+  var drive = hyperdrive(memdb())
+  var f1 = new Hyperfeed(drive)
+  var f2 = new Hyperfeed(drive, f1.key(), {own: true})
+  f1.push({title: 'foo'}).then(() => {
+    f2.list((err, entries) => {
+      t.error(err)
+      t.same(entries.length, 1)
+      t.end()
+    })
+  })
+})
+
 tape('owner', function (t) {
-  var db = memdb()
-  var torrent = new Hyperfeed({storage: db})
+  var drive = hyperdrive(memdb())
+  var torrent = new Hyperfeed(drive)
   t.same(torrent.own, true)
-  var t2 = new Hyperfeed(torrent.key(), {own: true, storage: db})
+  var t2 = new Hyperfeed(drive, torrent.key(), {own: true})
   t.same(t2.own, true)
   t.end()
 })
 
 tape('not owner', function (t) {
+  var drive = hyperdrive(memdb())
   var key = '8a2b34a78d9f940c6379f5a6cabd673bf722ea45025a6db5e8e7a94bd3517dc9' // random key
-  var torrent = new Hyperfeed(key, {own: false})
+  var torrent = new Hyperfeed(drive, key, {own: false})
   t.same(torrent.own, false)
   t.end()
 })
@@ -279,7 +294,8 @@ tape('set meta', function (t) {
 })
 
 tape('raf', function (t) {
-  var torrent = new Hyperfeed({file: function (name) { return raf('test/' + name) }})
+  var drive = hyperdrive(memdb())
+  var torrent = new Hyperfeed(drive, {file: function (name) { return raf('test/' + name) }})
   torrent.update(rss).then(torrent => {
     fs.stat('test/id-0', (err, stats) => {
       t.error(err)
