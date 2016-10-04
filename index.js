@@ -12,7 +12,7 @@ const uuid = require('uuid')
 const through2 = require('through2')
 
 function Hyperfeed (drive, key, opts) {
-  if (!(this instanceof Hyperfeed)) return new Hyperfeed(opts)
+  if (!(this instanceof Hyperfeed)) return new Hyperfeed(drive, key, opts)
 
   if (typeof key === 'object' && !Buffer.isBuffer(key) && key) {
     opts = key
