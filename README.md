@@ -7,7 +7,6 @@ Hyperfed is a self-archiving P2P live feed. You can convert any RSS/ATOM/RDF Fee
 * **Self-archiving**: All published items will be archived. If the feed is updated and doesn't contain old items, Hyperfeed still preserve them.
 * **P2P**: Feed items are distributed in a P2P manner. Save bandwidth and support offline mode.
 * **Live**: No need to constantly scrap a RSS feed, Updates will be pushed to you.
-* **Secure**: All items are verified via publisher's public key.
 
 ```
 npm install hyperfeed
