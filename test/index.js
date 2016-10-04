@@ -1,13 +1,15 @@
 const tape = require('tape')
 const fs = require('fs')
 const hyperdrive = require('hyperdrive')
-const Hyperfeed = require('..')
+const hyperfeed = require('..')
 const Feed = require('feed')
 const FeedParser = require('feedparser')
 const toStream = require('string-to-stream')
 const raf = require('random-access-file')
 const memdb = require('memdb')
 
+// =============
+// test data
 var feed = new Feed({
   title: 'test feed',
   description: 'http://example.com',
@@ -26,41 +28,19 @@ for (var i = 0; i < 10; i++) {
   feed.addItem(x)
 }
 var rss = feed.render('rss-2.0')
-
-tape('reopen and list', function (t) {
-  var drive = hyperdrive(memdb())
-  var f1 = new Hyperfeed(drive)
-  var f2 = new Hyperfeed(drive, f1.key(), {own: true})
-  f1.push({title: 'foo'}).then(() => {
-    f2.list((err, entries) => {
-      t.error(err)
-      t.same(entries.length, 1)
-      t.end()
-    })
+var drive = hyperdrive(memdb())
+var setupTestFeed = function () {
+  return new Promise((resolve, reject) => {
+    hyperfeed(drive).createFeed().update(rss).then(resolve)
   })
-})
+}
 
-tape('owner', function (t) {
-  var drive = hyperdrive(memdb())
-  var torrent = new Hyperfeed(drive)
-  t.same(torrent.own, true)
-  var t2 = new Hyperfeed(drive, torrent.key(), {own: true})
-  t.same(t2.own, true)
-  t.end()
-})
-
-tape('not owner', function (t) {
-  var drive = hyperdrive(memdb())
-  var key = '8a2b34a78d9f940c6379f5a6cabd673bf722ea45025a6db5e8e7a94bd3517dc9' // random key
-  var torrent = new Hyperfeed(drive, key, {own: false})
-  t.same(torrent.own, false)
-  t.end()
-})
+// =====
+// tests
 
 tape('update & list', function (t) {
-  var torrent = new Hyperfeed()
-  torrent.update(rss).then(torrent => {
-    torrent.list((err, entries) => {
+  setupTestFeed().then(f => {
+    f.list((err, entries) => {
       t.error(err)
       t.same(entries.length, 10)
       t.end()
@@ -84,11 +64,10 @@ tape('multiple update', function (t) {
     }
     feed2.addItem(x)
   }
-  var torrent = new Hyperfeed()
-  torrent.update(rss).then(torrent => {
+  setupTestFeed().then(f => {
     // update with same xml
-    torrent.update(feed2.render('rss-2.0')).then(torrent => {
-      torrent.list((err, entries) => {
+    f.update(feed2.render('rss-2.0')).then(f => {
+      f.list((err, entries) => {
         t.error(err)
         t.same(entries.length, 10)
 
@@ -101,8 +80,8 @@ tape('multiple update', function (t) {
           date: new Date()
         }
         feed2.addItem(x)
-        torrent.update(feed2.render('rss-2.0')).then(torrent => {
-          torrent.list((err, entries) => {
+        f.update(feed2.render('rss-2.0')).then(f => {
+          f.list((err, entries) => {
             t.error(err)
             t.same(entries.length, 11)
             t.end()
@@ -120,12 +99,12 @@ tape('push', function (t) {
     link: 'http://example.com'
   })
   var rss = feed.render('rss-2.0')
-  var torrent = new Hyperfeed()
-  torrent.update(rss).then(torrent => {
-    torrent.push({title: 'moo'}).then(torrent => {
-      torrent.list((err, entries) => {
+  var f = hyperfeed().createFeed()
+  f.update(rss).then(f => {
+    f.push({title: 'moo'}).then(f => {
+      f.list((err, entries) => {
         t.error(err)
-        torrent.load(entries[0]).then(item => {
+        f.load(entries[0]).then(item => {
           t.error(err)
 
           t.ok(item.guid) // should have default name(guid)
@@ -138,29 +117,27 @@ tape('push', function (t) {
 })
 
 tape('live list', function (t) {
-  var torrent = new Hyperfeed()
-  torrent.update(rss).then(torrent => {
-    var list = torrent.list({live: true})
+  setupTestFeed().then(f => {
+    var list = f.list({live: true})
     t.ok(list)
     var count = 0
     list.on('data', entry => {
       count += 1
       if (count === 11) t.end() // should include newly pushed items
     })
-    torrent.push({title: 'moo'})
+    f.push({title: 'moo'})
   })
 })
 
 tape('nested live and non-live list', function (t) {
-  var torrent = new Hyperfeed()
-  torrent.update(rss).then(torrent => {
-    var list = torrent.list({live: true})
+  setupTestFeed().then(f => {
+    var list = f.list({live: true})
     t.ok(list)
     var count = 0
     list.on('data', entry => {
       count += 1
       if (count === 11) { // should include newly pushed items
-        var list2 = torrent.list()
+        var list2 = f.list()
         var count2 = 0
         list2.on('data', entry => {
           count2 += 1
@@ -171,14 +148,13 @@ tape('nested live and non-live list', function (t) {
         })
       }
     })
-    torrent.push({title: 'moo'})
+    f.push({title: 'moo'})
   })
 })
 
 tape('non-live list', function (t) {
-  var torrent = new Hyperfeed()
-  torrent.update(rss).then(torrent => {
-    var list = torrent.list()
+  setupTestFeed().then(f => {
+    var list = f.list()
     t.ok(list)
     var count = 0
     list.on('data', entry => {
@@ -192,14 +168,13 @@ tape('non-live list', function (t) {
 })
 
 tape('load', function (t) {
-  var torrent = new Hyperfeed()
-  torrent.update(rss).then(torrent => {
-    torrent.list((err, entries) => {
+  setupTestFeed().then(f => {
+    f.list((err, entries) => {
       t.error(err)
       t.same(entries.length, 10)
       var count = 0
       entries.forEach(e => {
-        torrent.load(e).then(item => {
+        f.load(e).then(item => {
           t.error(err)
           t.same(item.guid, e.name)
           count += 1
@@ -211,9 +186,8 @@ tape('load', function (t) {
 })
 
 tape('create xml', function (t) {
-  var torrent = new Hyperfeed()
-  torrent.update(rss).then(torrent => {
-    torrent.xml(10).then(xml => {
+  setupTestFeed().then(f => {
+    f.xml(10).then(xml => {
       var parser = new FeedParser()
       toStream(xml).pipe(parser)
 
@@ -253,10 +227,10 @@ tape('dedup', function (t) {
     feed.addItem(x)
   }
   var rss = feed.render('rss-2.0')
+  var f = hyperfeed(drive).createFeed()
 
-  var torrent = new Hyperfeed()
-  torrent.update(rss).then(torrent => {
-    torrent.list((err, entries) => {
+  f.update(rss).then(f => {
+    f.list((err, entries) => {
       t.error(err)
       t.same(entries.length, 1)
       t.end()
@@ -265,14 +239,13 @@ tape('dedup', function (t) {
 })
 
 tape('set meta', function (t) {
-  var torrent = new Hyperfeed()
-  torrent.update(rss).then(torrent => {
-    torrent.setMeta({
+  setupTestFeed().then(f => {
+    f.setMeta({
       title: 'foo',
       description: 'http://example2.com',
       link: 'http://example2.com'
-    }).then(torrent => {
-      torrent.xml(10).then(xml => {
+    }).then(f => {
+      f.xml(10).then(xml => {
         var parser = new FeedParser()
         toStream(xml).pipe(parser)
 
@@ -294,12 +267,17 @@ tape('set meta', function (t) {
 })
 
 tape('raf', function (t) {
-  var drive = hyperdrive(memdb())
-  var torrent = new Hyperfeed(drive, {file: function (name) { return raf('test/' + name) }})
-  torrent.update(rss).then(torrent => {
+  var f = hyperfeed(drive).createFeed({file: function (name) { return raf('test/' + name) }})
+  f.update(rss).then(f => {
     fs.stat('test/id-0', (err, stats) => {
       t.error(err)
       t.ok(stats)
+
+      // clean up test files
+      for (var i = 0; i < 10; i++) {
+        fs.unlinkSync(`test/id-${i}`)
+      }
+      fs.unlinkSync('test/_meta')
       t.end()
     })
   })
