@@ -63,10 +63,6 @@ where raf is
 const raf = require('random-access-file')
 ```
 
-#### `feed.open([cb])`
-
-Open hyperfeed and populate some metedata. Call this before using the feed.
-
 #### `feed.swarm([opts])`
 
 Start replicating the feed with a swarm p2p network. Peers can download this feed with its key.
