@@ -20,7 +20,7 @@ for (var i = 0; i < 10; i++) {
   var x = {
     title: `entry${i}`,
     description: `desc${i}`,
-    url: 'example.com',
+    link: 'example.com',
     guid: `id-${i}`,
     date: new Date()
   }

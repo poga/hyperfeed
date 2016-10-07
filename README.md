@@ -105,9 +105,11 @@ You can collect the results of the stream with cb(err, entries).
 
 **Entries are metadata of feed items. If you want to get the feed item itself, call `feed.load(entry)`**
 
-#### `var promise = feed.load(entry)`
+#### `var promise = feed.load(entry, [opts])`
 
 Returns a Feed item from given entry.
+
+if you want to load scrapped data and it's not a JSON. set `opts` to `{raw: true}`
 
 `entry` is an object returned by `#list()`
 

@@ -111,7 +111,7 @@ Feed.prototype.list = function (opts, cb) {
   if (!opts.live) opts.live = false
 
   var rs = through2.obj(function (obj, enc, next) {
-    if (obj.name !== '_meta') this.push(obj)
+    if (obj.name !== '_meta' && !obj.name.startsWith('scrap/')) this.push(obj)
     next()
   })
   var finalize = (cb) => {
@@ -126,7 +126,7 @@ Feed.prototype.list = function (opts, cb) {
       this._archive.list(opts, (err, results) => {
         if (err) return cb(err)
 
-        cb(null, results.filter(x => { return x.name !== '_meta' }))
+        cb(null, results.filter(x => { return x.name !== '_meta' && !x.name.startsWith('scrap/') }))
       })
     } else {
       this._archive.list(opts).pipe(rs)
@@ -178,7 +178,7 @@ Feed.prototype._scrap = function (entry) {
       if (err) return cb(err)
       if (resp.statusCode !== 200) return cb(new Error('invalid status code'))
 
-      toStream(body).pipe(this._createWriteStream(entry)).on('finish', cb)
+      toStream(body).pipe(this._createWriteStream({guid: `scrap/${entry.guid}`, ctime: new Date()})).on('finish', cb)
     })
   }
 }
@@ -190,9 +190,9 @@ Feed.prototype._createWriteStream = function (entry) {
   })
 }
 
-Feed.prototype.load = function (entry) {
+Feed.prototype.load = function (entry, opts) {
   return new Promise((resolve, reject) => {
-    this._load(entry)((err, item) => {
+    this._load(entry, opts)((err, item) => {
       if (err) return reject(err)
 
       resolve(item)
@@ -200,13 +200,13 @@ Feed.prototype.load = function (entry) {
   })
 }
 
-Feed.prototype._load = function (entry) {
+Feed.prototype._load = function (entry, opts) {
   return (cb) => {
     var rs = this._archive.createFileReadStream(entry)
     toString(rs, (err, str) => {
       if (err) return cb(err)
 
-      var item = JSON.parse(str)
+      var item = (opts && opts.raw) ? str : JSON.parse(str)
       item.date = moment(item.date).toDate()
       cb(null, item)
     })
