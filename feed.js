@@ -85,14 +85,14 @@ Feed.prototype.setMeta = function (meta) {
   })
 }
 
-Feed.prototype.push = function (entry) {
-  if (!entry.guid) entry.guid = uuid.v1()
-  if (!entry.date) entry.date = new Date()
+Feed.prototype.push = function (item) {
+  if (!item.guid) item.guid = uuid.v1()
+  if (!item.date) item.date = new Date()
 
   return new Promise((resolve, reject) => {
     var tasks = []
 
-    tasks.push(this._save(entry))
+    tasks.push(this._save(item))
 
     async.series(tasks, (err, results) => {
       if (err) return reject(new Error('archive failed'))
