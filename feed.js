@@ -153,40 +153,40 @@ Feed.prototype.xml = function (count) {
   })
 }
 
-Feed.prototype._save = function (entry) {
+Feed.prototype._save = function (item) {
   var feed = this
   return (cb) => {
     this.list((err, entries) => {
       if (err) return cb(err)
-      if (entries.find(x => x.name === entry.guid)) return cb() // ignore duplicated entry
-      if (!entry.guid) return cb(new Error('GUID not found'))
+      if (entries.find(x => x.name === item.guid)) return cb() // ignore duplicated entry
+      if (!item.guid) return cb(new Error('GUID not found'))
 
-      toStream(JSON.stringify(entry)).pipe(this._createWriteStream(entry)).on('finish', done)
+      toStream(JSON.stringify(item)).pipe(this._createWriteStream(item)).on('finish', done)
     })
 
     function done () {
-      if (feed.scrap) return feed._scrap(entry)(cb)
+      if (feed.scrap) return feed._scrap(item)(cb)
       return cb()
     }
   }
 }
 
-Feed.prototype._scrap = function (entry) {
+Feed.prototype._scrap = function (item) {
   return (cb) => {
-    var url = entry.url || entry.link
+    var url = item.url || item.link
     request(url, (err, resp, body) => {
       if (err) return cb(err)
       if (resp.statusCode !== 200) return cb(new Error('invalid status code'))
 
-      toStream(body).pipe(this._createWriteStream({guid: `scrap/${entry.guid}`, ctime: new Date()})).on('finish', cb)
+      toStream(body).pipe(this._createWriteStream({guid: `scrap/${item.guid}`, ctime: new Date()})).on('finish', cb)
     })
   }
 }
 
-Feed.prototype._createWriteStream = function (entry) {
+Feed.prototype._createWriteStream = function (item) {
   return this._archive.createFileWriteStream({
-    name: entry.guid,
-    ctime: entry.date ? entry.date.getTime() : 0
+    name: item.guid,
+    ctime: item.date ? item.date.getTime() : 0
   })
 }
 
