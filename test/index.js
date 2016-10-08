@@ -43,6 +43,7 @@ tape('update & list', function (t) {
     f.list((err, entries) => {
       t.error(err)
       t.same(entries.length, 10)
+      t.same(Math.floor(entries[0].ctime / 1000), Math.floor(feed.items[0].date.getTime() / 1000)) // we only care precision to second
       t.end()
     })
   })
@@ -282,4 +283,3 @@ tape('raf', function (t) {
     })
   })
 })
-

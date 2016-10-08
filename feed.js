@@ -178,7 +178,7 @@ Feed.prototype._scrap = function (item) {
       if (err) return cb(err)
       if (resp.statusCode !== 200) return cb(new Error('invalid status code'))
 
-      toStream(body).pipe(this._createWriteStream({guid: `scrap/${item.guid}`, ctime: new Date()})).on('finish', cb)
+      toStream(body).pipe(this._createWriteStream({guid: `scrap/${item.guid}`, date: item.date})).on('finish', cb)
     })
   }
 }

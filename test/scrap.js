@@ -23,6 +23,7 @@ tape('scrap', function (t) {
     f.list((err, entries) => {
       t.error(err)
       t.same(entries.length, 1)
+      t.same(entries[0].name, feed.items[0].guid)
       t.end()
     })
   })
@@ -47,6 +48,9 @@ tape('scrap with list stream (withScrapped = true)', function (t) {
     list.on('data', x => { entries.push(x) })
     list.on('end', () => {
       t.same(entries.length, 2)
+      t.same(Math.floor(entries[0].ctime / 1000), Math.floor(feed.items[0].date.getTime() / 1000)) // we only care precision to second
+      // scrapped data should have the same ctime as its feed item
+      t.same(Math.floor(entries[1].ctime / 1000), Math.floor(feed.items[0].date.getTime() / 1000)) // we only care precision to second
       t.end()
     })
   })
