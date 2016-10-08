@@ -117,6 +117,22 @@ tape('save', function (t) {
   })
 })
 
+tape('save to target entry', function (t) {
+  var f = hyperfeed().createFeed()
+  f.save({title: 'foo'}, {ctime: 123, name: 'entry'}).then(() => {
+    f.list((err, entries) => {
+      t.error(err)
+      t.same(entries[0].ctime, 123)
+      t.same(entries[0].name, 'entry')
+      t.same(entries.length, 1)
+      f.load(entries[0]).then(item => {
+        t.same(item.title, 'foo')
+        t.end()
+      })
+    })
+  })
+})
+
 tape('live list', function (t) {
   setupTestFeed().then(f => {
     var list = f.list({live: true})

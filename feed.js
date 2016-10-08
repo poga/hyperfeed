@@ -157,7 +157,7 @@ Feed.prototype.save = function (item, targetEntry) {
 
       var to
       if (targetEntry) {
-        item = self._archive.createFileWriteStream(targetEntry)
+        to = self._archive.createFileWriteStream(targetEntry)
       } else {
         to = self._createWriteStream(item)
       }

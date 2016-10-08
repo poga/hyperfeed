@@ -114,7 +114,7 @@ if you want to load scrapped data and it's not a JSON. set `opts` to `{raw: true
 
 Save a new feed item into hyperfeed. Check [https://github.com/jpmonette/feed](https://github.com/jpmonette/feed) for item detail.
 
-If you want to specify entry metadata, pass a `targetEntry`.
+If you want to specify entry metadata (e.g. `ctime`, `name`...), pass a `targetEntry`.
 
 #### `var promise = feed.xml(count)`
 
