@@ -5,7 +5,7 @@ tape('reopen and list', function (t) {
   var hf = hyperfeed()
   var f1 = hf.createFeed()
   var f2 = hf.createFeed(f1.key(), {own: true})
-  f1.push({title: 'foo'}).then(() => {
+  f1.save({title: 'foo'}).then(() => {
     f2.list((err, entries) => {
       t.error(err)
       t.same(entries.length, 1)

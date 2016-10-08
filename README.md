@@ -86,10 +86,6 @@ Returns the metadata of the feed.
 
 Explicitly set the metadata
 
-#### `var promise = feed.push(item)`
-
-Push a new feed item into hyperfeed. Check [https://github.com/jpmonette/feed](https://github.com/jpmonette/feed) for item detail.
-
 #### `var stream = feed.list([opts], [cb])`
 
 Returns a readable stream of all entries in the archive, include history
@@ -113,6 +109,12 @@ Returns a Feed item from given entry.
 if you want to load scrapped data and it's not a JSON. set `opts` to `{raw: true}`
 
 `entry` is an object returned by `#list()`
+
+#### `var promise = feed.save(item, [targetEntry])`
+
+Save a new feed item into hyperfeed. Check [https://github.com/jpmonette/feed](https://github.com/jpmonette/feed) for item detail.
+
+If you want to specify entry metadata, pass a `targetEntry`.
 
 #### `var promise = feed.xml(count)`
 

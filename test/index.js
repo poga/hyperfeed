@@ -93,7 +93,7 @@ tape('multiple update', function (t) {
   })
 })
 
-tape('push', function (t) {
+tape('save', function (t) {
   var feed = new Feed({
     title: 'test feed',
     description: 'http://example.com',
@@ -102,7 +102,7 @@ tape('push', function (t) {
   var rss = feed.render('rss-2.0')
   var f = hyperfeed().createFeed()
   f.update(rss).then(f => {
-    f.push({title: 'moo'}).then(f => {
+    f.save({title: 'moo'}).then(() => {
       f.list((err, entries) => {
         t.error(err)
         f.load(entries[0]).then(item => {
@@ -126,7 +126,7 @@ tape('live list', function (t) {
       count += 1
       if (count === 11) t.end() // should include newly pushed items
     })
-    f.push({title: 'moo'})
+    f.save({title: 'moo'})
   })
 })
 
@@ -149,7 +149,7 @@ tape('nested live and non-live list', function (t) {
         })
       }
     })
-    f.push({title: 'moo'})
+    f.save({title: 'moo'})
   })
 })
 

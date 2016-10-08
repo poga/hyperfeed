@@ -60,10 +60,10 @@ Feed.prototype.update = function (feed) {
     })
     feedparser.on('readable', function () {
       var readable = this
-      var entry
+      var item
 
-      while ((entry = readable.read())) {
-        tasks.push(self._save(entry))
+      while ((item = readable.read())) {
+        tasks.push(_save(item))
       }
     })
     feedparser.on('end', function () {
@@ -73,6 +73,12 @@ Feed.prototype.update = function (feed) {
       })
     })
   })
+
+  function _save (item) {
+    return (cb) => {
+      self.save(item).then(() => { cb() }).catch(err => { cb(err) })
+    }
+  }
 }
 
 Feed.prototype.setMeta = function (meta) {
@@ -82,22 +88,6 @@ Feed.prototype.setMeta = function (meta) {
   return new Promise((resolve, reject) => {
     var ws = self._archive.createFileWriteStream('_meta')
     toStream(JSON.stringify(meta)).pipe(ws).on('finish', () => { resolve(self) })
-  })
-}
-
-Feed.prototype.push = function (item) {
-  if (!item.guid) item.guid = uuid.v1()
-  if (!item.date) item.date = new Date()
-
-  return new Promise((resolve, reject) => {
-    var tasks = []
-
-    tasks.push(this._save(item))
-
-    async.series(tasks, (err, results) => {
-      if (err) return reject(new Error('archive failed'))
-      resolve(this)
-    })
   })
 }
 
@@ -153,22 +143,32 @@ Feed.prototype.xml = function (count) {
   })
 }
 
-Feed.prototype._save = function (item) {
-  var feed = this
-  return (cb) => {
-    this.list((err, entries) => {
-      if (err) return cb(err)
-      if (entries.find(x => x.name === item.guid)) return cb() // ignore duplicated entry
-      if (!item.guid) return cb(new Error('GUID not found'))
+Feed.prototype.save = function (item, targetEntry) {
+  var self = this
+  if (!item.guid) item.guid = uuid.v1()
+  if (!item.date) item.date = new Date()
 
-      toStream(JSON.stringify(item)).pipe(this._createWriteStream(item)).on('finish', done)
+  var feed = this
+  return new Promise((resolve, reject) => {
+    self.list((err, entries) => {
+      if (err) return reject(err)
+      if (entries.find(x => x.name === item.guid)) return resolve() // ignore duplicated entry
+      if (!item.guid) return reject(new Error('GUID not found'))
+
+      var to
+      if (targetEntry) {
+        item = self._archive.createFileWriteStream(targetEntry)
+      } else {
+        to = self._createWriteStream(item)
+      }
+      toStream(JSON.stringify(item)).pipe(to).on('finish', done)
     })
 
     function done () {
-      if (feed.scrap) return feed._scrap(item)(cb)
-      return cb()
+      if (feed.scrap) return feed._scrap(item)(resolve)
+      return resolve()
     }
-  }
+  })
 }
 
 Feed.prototype._scrap = function (item) {
