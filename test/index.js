@@ -117,6 +117,41 @@ tape('save', function (t) {
   })
 })
 
+tape('save without specify target entry', function (t) {
+  var f = hyperfeed().createFeed()
+  f.save({title: 'foo'}).then(() => {
+    f.list((err, entries) => {
+      t.error(err)
+      t.ok(entries[0].ctime)
+      t.ok(entries[0].name)
+      t.same(entries.length, 1)
+      f.load(entries[0]).then(item => {
+        t.same(item.title, 'foo')
+        t.end()
+      })
+    })
+  })
+})
+
+tape('save with pre-scrapped data', function (t) {
+  var f = hyperfeed().createFeed({scrap: true})
+  f.save({title: 'foo'}, null, 'abc').then(() => {
+    f.list((err, entries) => {
+      t.error(err)
+      t.ok(entries[0].ctime)
+      t.ok(entries[0].name)
+      t.same(entries.length, 1)
+      f.load(entries[0]).then(item => {
+        t.same(item.title, 'foo')
+        f.load(`scrap/${entries[0].name}`, {raw: true}).then(data => {
+          t.same(data, 'abc')
+          t.end()
+        })
+      })
+    })
+  })
+})
+
 tape('save to target entry', function (t) {
   var f = hyperfeed().createFeed()
   f.save({title: 'foo'}, {ctime: 123, name: 'entry'}).then(() => {

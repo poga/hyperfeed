@@ -143,43 +143,53 @@ Feed.prototype.xml = function (count) {
   })
 }
 
-Feed.prototype.save = function (item, targetEntry) {
-  var self = this
+Feed.prototype.save = function (item, targetEntry, scrappedData) {
   if (!item.guid) item.guid = uuid.v1()
   if (!item.date) item.date = new Date()
 
   var feed = this
   return new Promise((resolve, reject) => {
-    self.list((err, entries) => {
+    feed.list((err, entries) => {
       if (err) return reject(err)
       if (entries.find(x => x.name === item.guid)) return resolve() // ignore duplicated entry
       if (!item.guid) return reject(new Error('GUID not found'))
 
       var to
       if (targetEntry) {
-        to = self._archive.createFileWriteStream(targetEntry)
+        to = feed._archive.createFileWriteStream(targetEntry)
       } else {
-        to = self._createWriteStream(item)
+        to = feed._createWriteStream(item)
       }
       toStream(JSON.stringify(item)).pipe(to).on('finish', done)
     })
 
     function done () {
-      if (feed.scrap) return feed._scrap(item)(resolve)
+      if (feed.scrap) {
+        if (scrappedData) return feed._saveScrapped(item, scrappedData)(resolve)
+
+        return feed._scrap(item)(resolve)
+      }
       return resolve()
     }
   })
 }
 
 Feed.prototype._scrap = function (item) {
+  var self = this
   return (cb) => {
     var url = item.url || item.link
     request(url, (err, resp, body) => {
       if (err) return cb(err)
       if (resp.statusCode !== 200) return cb(new Error('invalid status code'))
 
-      toStream(body).pipe(this._createWriteStream({guid: `scrap/${item.guid}`, date: item.date})).on('finish', cb)
+      self._saveScrapped(item, body)
     })
+  }
+}
+
+Feed.prototype._saveScrapped = function (item, data) {
+  return (cb) => {
+    toStream(data).pipe(this._createWriteStream({guid: `scrap/${item.guid}`, date: item.date})).on('finish', cb)
   }
 }
 
