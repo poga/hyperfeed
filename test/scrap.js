@@ -40,6 +40,18 @@ tape('scrap with list stream', function (t) {
   })
 })
 
+tape('scrap with list stream (withScrapped = true)', function (t) {
+  hyperfeed().createFeed({scrap: true}).update(rss).then(f => {
+    var list = f.list({withScrapped: true})
+    var entries = []
+    list.on('data', x => { entries.push(x) })
+    list.on('end', () => {
+      t.same(entries.length, 2)
+      t.end()
+    })
+  })
+})
+
 tape('scraped data', function (t) {
   hyperfeed().createFeed({scrap: true}).update(rss).then(f => {
     f.list((err, entries) => {

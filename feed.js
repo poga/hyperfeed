@@ -111,7 +111,7 @@ Feed.prototype.list = function (opts, cb) {
   if (!opts.live) opts.live = false
 
   var rs = through2.obj(function (obj, enc, next) {
-    if (obj.name !== '_meta' && !obj.name.startsWith('scrap/')) this.push(obj)
+    if (obj.name !== '_meta' && (opts.withScrapped || !obj.name.startsWith('scrap/'))) this.push(obj)
     next()
   })
   var finalize = (cb) => {
@@ -126,7 +126,7 @@ Feed.prototype.list = function (opts, cb) {
       this._archive.list(opts, (err, results) => {
         if (err) return cb(err)
 
-        cb(null, results.filter(x => { return x.name !== '_meta' && !x.name.startsWith('scrap/') }))
+        cb(null, results.filter(x => { return x.name !== '_meta' && (opts.withScrapped || !x.name.startsWith('scrap/')) }))
       })
     } else {
       this._archive.list(opts).pipe(rs)

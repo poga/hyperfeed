@@ -98,6 +98,7 @@ Returns a readable stream of all entries in the archive, include history
 {
   offset: 0 // start streaming from this offset (default: 0)
   live: false // keep the stream open as new updates arrive (default: false)
+  withScrapped: false // also return scrapped data (default: false)
 }
 ```
 
