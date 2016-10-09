@@ -182,7 +182,7 @@ Feed.prototype._scrap = function (item) {
       if (err) return cb(err)
       if (resp.statusCode !== 200) return cb(new Error('invalid status code'))
 
-      self._saveScrapped(item, body)
+      self._saveScrapped(item, body)(cb)
     })
   }
 }
