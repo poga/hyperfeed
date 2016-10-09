@@ -212,13 +212,14 @@ Feed.prototype.load = function (entry, opts) {
 
 Feed.prototype._load = function (entry, opts) {
   return (cb) => {
-    var rs = this._archive.createFileReadStream(entry)
-    toString(rs, (err, str) => {
-      if (err) return cb(err)
-
+    toString(this._archive.createFileReadStream(entry)).then(str => {
       var item = (opts && opts.raw) ? str : JSON.parse(str)
       item.date = moment(item.date).toDate()
+
       cb(null, item)
+    })
+    .catch(err => {
+      cb(err)
     })
   }
 }

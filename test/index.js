@@ -37,7 +37,6 @@ var setupTestFeed = function () {
 
 // =====
 // tests
-
 tape('update & list', function (t) {
   setupTestFeed().then(f => {
     f.list((err, entries) => {
@@ -130,6 +129,14 @@ tape('save without specify target entry', function (t) {
         t.end()
       })
     })
+  })
+})
+
+tape('load not found', function (t) {
+  var f = hyperfeed().createFeed()
+  f.load('non-exists').catch(err => {
+    t.ok(err)
+    t.end()
   })
 })
 
