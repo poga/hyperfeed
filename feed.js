@@ -164,11 +164,9 @@ Feed.prototype.save = function (item, targetEntry, scrappedData) {
     })
 
     function done () {
-      if (feed.scrap) {
-        if (scrappedData) return feed._saveScrapped(item, scrappedData)(resolve)
+      if (scrappedData) return feed._saveScrapped(item, scrappedData)(resolve)
+      if (feed.scrap) return feed._scrap(item)(resolve)
 
-        return feed._scrap(item)(resolve)
-      }
       return resolve()
     }
   })
