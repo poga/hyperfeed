@@ -68,7 +68,7 @@ const raf = require('random-access-file')
 
 Start replicating the feed with a swarm p2p network. Peers can download this feed with its key.
 
-Returns a swarm instance.
+The return object, sw, is an event emitter that will emit a peer event with the peer information when a peer is found.
 
 Check [https://github.com/karissa/hyperdrive-archive-swarm](https://github.com/karissa/hyperdrive-archive-swarm) for options.
 
