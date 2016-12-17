@@ -64,9 +64,11 @@ where raf is
 const raf = require('random-access-file')
 ```
 
-#### `feed.swarm([opts])`
+#### `var sw = feed.swarm([opts])`
 
 Start replicating the feed with a swarm p2p network. Peers can download this feed with its key.
+
+Returns a swarm instance.
 
 Check [https://github.com/karissa/hyperdrive-archive-swarm](https://github.com/karissa/hyperdrive-archive-swarm) for options.
 
