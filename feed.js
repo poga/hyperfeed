@@ -3,7 +3,6 @@ const FeedGen = require('feed')
 const toStream = require('string-to-stream')
 const async = require('async')
 const toString = require('stream-to-string')
-const swarm = require('hyperdrive-archive-swarm')
 const request = require('request')
 const moment = require('moment')
 const uuid = require('uuid')
@@ -31,14 +30,13 @@ function Feed (drive, key, opts) {
   } else {
     this._archive = this._drive.createArchive(archiveOpts)
   }
+  this.key = this._archive.key
+  this.id = this._archive.id
+  this.discoveryKey = this._archive.discoveryKey
 }
 
-Feed.prototype.key = function () {
-  return this._archive.key
-}
-
-Feed.prototype.swarm = function (opts) {
-  return swarm(this._archive, opts)
+Feed.prototype.replicate = function (opts) {
+  return this._archive.replicate(opts)
 }
 
 Feed.prototype.update = function (feed) {

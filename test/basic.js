@@ -4,7 +4,7 @@ const hyperfeed = require('..')
 tape('reopen and list', function (t) {
   var hf = hyperfeed()
   var f1 = hf.createFeed()
-  var f2 = hf.createFeed(f1.key(), {own: true})
+  var f2 = hf.createFeed(f1.key, {own: true})
   f1.save({title: 'foo'}).then(() => {
     f2.list((err, entries) => {
       t.error(err)
@@ -17,7 +17,7 @@ tape('reopen and list', function (t) {
 tape('owner', function (t) {
   var torrent = hyperfeed().createFeed()
   t.same(torrent.own, true)
-  var t2 = hyperfeed().createFeed(torrent.key(), {own: true})
+  var t2 = hyperfeed().createFeed(torrent.key, {own: true})
   t.same(t2.own, true)
   t.end()
 })

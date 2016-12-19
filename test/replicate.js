@@ -3,6 +3,7 @@ const hyperfeed = require('..')
 const hyperdrive = require('hyperdrive')
 const RSS = require('rss')
 const memdb = require('memdb')
+const swarm = require('hyperdrive-archive-swarm')
 
 var feed = new RSS({
   title: 'test feed',
@@ -24,10 +25,10 @@ for (var i = 0; i < 10; i++) {
 
 tape('replicate', function (t) {
   var f1 = hyperfeed().createFeed()
-  var write = f1.swarm()
+  var write = swarm(f1)
   f1.update(feed.xml()).then(f1 => {
-    var peer = hyperfeed().createFeed(f1.key(), {own: false})
-    var read = peer.swarm()
+    var peer = hyperfeed().createFeed(f1.key, {own: false})
+    var read = swarm(peer)
     peer.list((err, entries) => {
       t.error(err)
       t.same(entries.length, 10)

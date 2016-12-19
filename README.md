@@ -19,11 +19,12 @@ host a feed:
 ```js
 const request = require('request')
 const hyperfeed = require('hyperfeed')
+const swarm = require('hyperdiscovery')
 
 request('https://medium.com/feed/google-developers', (err, resp, body) => {
   hyperfeed().createFeed.update(body).then(feed => {
-    feed.swarm() // share it through a p2p network
-    console.log(feed.key().toString('hex')) // this will be the key for discovering
+    swarm(feed) // share it through a p2p network
+    console.log(feed.key.toString('hex')) // this will be the key for discovering
   })
 })
 ```
@@ -32,9 +33,10 @@ download feed from peer
 
 ```js
 const Hyperfeed = require('hyperfeed')
+const swarm = require('hyperdiscovery')
 
 var feed = hyperfeed().createFeed(<KEY FROM ABOVE>, {own: false})
-feed.swarm() // load the feed from the p2p network
+swarm(feed) // load the feed from the p2p network
 feed.list((err, entries) => {
   console.log(entries) // all entries in the feed (include history entries)
 })
@@ -64,17 +66,9 @@ where raf is
 const raf = require('random-access-file')
 ```
 
-#### `var sw = feed.swarm([opts])`
+#### `feed.key`
 
-Start replicating the feed with a swarm p2p network. Peers can download this feed with its key.
-
-The return object, sw, is an event emitter that will emit a peer event with the peer information when a peer is found.
-
-Check [https://github.com/karissa/hyperdrive-archive-swarm](https://github.com/karissa/hyperdrive-archive-swarm) for options.
-
-#### `feed.key()`
-
-Returns the 32-bit public key of the feed.
+The 32-bit public key of the feed.
 
 #### `var promise = feed.update(rssXML)`
 
