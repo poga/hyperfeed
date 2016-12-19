@@ -1,9 +1,7 @@
 const tape = require('tape')
 const hyperfeed = require('..')
-const hyperdrive = require('hyperdrive')
 const RSS = require('rss')
-const memdb = require('memdb')
-const swarm = require('hyperdrive-archive-swarm')
+const swarm = require('hyperdiscovery')
 
 var feed = new RSS({
   title: 'test feed',
