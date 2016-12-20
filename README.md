@@ -118,6 +118,11 @@ If you already have scrapped data from item.link, you can pass it to `scrappedDa
 
 Returns a RSS-2.0 Feed in XML format containing latest `count` items.
 
+## Related Modules
+
+* [hyperfeed-server](https://github.com/poga/hyperfeed-server): host a hyperfeed from cli
+* [hyperfeed-merge](https://github.com/poga/hyperfeed-merge): merge multiple hyperfeed into one
+
 ## License
 
 The MIT License
