@@ -14,7 +14,7 @@ npm install hyperfeed
 
 ## Synopsis
 
-host a feed:
+Create a hyperfeed from a RSS feed:
 
 ```js
 const request = require('request')
@@ -29,7 +29,7 @@ request('https://medium.com/feed/google-developers', (err, resp, body) => {
 })
 ```
 
-download feed from peer
+Now you can replicate the hyperfeed through a p2p network:
 
 ```js
 const Hyperfeed = require('hyperfeed')
@@ -39,6 +39,17 @@ var feed = hyperfeed().createFeed(<KEY FROM ABOVE>, {own: false})
 swarm(feed) // load the feed from the p2p network
 feed.list((err, entries) => {
   console.log(entries) // all entries in the feed (include history entries)
+})
+
+// open a read stream, listening feed updates
+var rs = feed.list({live: true})
+rs.on('data', entry => {
+  // whenever a new entry is available, you will automatically receive it without any polling
+
+  // you can load the feed item with feed.load
+  feed.load(entry).then(item => {
+    // the actual feed item.
+  })
 })
 ```
 
