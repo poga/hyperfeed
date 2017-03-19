@@ -22,7 +22,7 @@ const hyperfeed = require('hyperfeed')
 const swarm = require('hyperdiscovery')
 
 request('https://medium.com/feed/google-developers', (err, resp, body) => {
-  hyperfeed().createFeed.update(body).then(feed => {
+  hyperfeed().createFeed().update(body).then(feed => {
     swarm(feed) // share it through a p2p network
     console.log(feed.key.toString('hex')) // this will be the key for discovering
   })
