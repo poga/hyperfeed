@@ -20,7 +20,9 @@ feed.addItem({
 var rss = feed.render('rss-2.0')
 
 tape('scrap', function (t) {
-  testFeed().then(f => {
+  testFeed((err, f) => {
+    t.error(err)
+
     f.list((err, entries) => {
       t.error(err)
       t.same(entries.length, 1)
@@ -31,7 +33,8 @@ tape('scrap', function (t) {
 })
 
 tape('scrap with list', function (t) {
-  testFeed().then(f => {
+  testFeed((err, f) => {
+    t.error(err)
     f.list(function (err, entries) {
       t.error(err)
       t.same(entries, ['foo'])
@@ -41,12 +44,14 @@ tape('scrap with list', function (t) {
 })
 
 tape('scraped data', function (t) {
-  testFeed().then(f => {
+  testFeed((err, f) => {
+    t.error(err)
     f.list((err, entries) => {
       t.error(err)
       t.same(entries.length, 1)
 
-      f.get(`scrap/${entries[0]}`).then(data => {
+      f.get(`scrap/${entries[0]}`, (err, data) => {
+        t.error(err)
         t.ok(data.toString().match(/The MIT License/))
         t.end()
       })
@@ -54,12 +59,10 @@ tape('scraped data', function (t) {
   })
 })
 
-function testFeed () {
+function testFeed (cb) {
   var archive = createArchive()
-  return new Promise((resolve, reject) => {
-    archive.ready(() => {
-      var feed = hyperfeed(archive, {scrap: true})
-      feed.update(rss).then(() => { resolve(feed) })
-    })
+  archive.ready(() => {
+    var feed = hyperfeed(archive, {scrap: true})
+    feed.update(rss, cb)
   })
 }

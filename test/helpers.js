@@ -7,21 +7,21 @@ function createArchive (key, opts) {
   return hyperdrive(ram, key, opts)
 }
 
-function createFeed () {
-  return new Promise((resolve, reject) => {
-    var archive = createArchive()
-    archive.ready(() => {
-      resolve(hyperfeed(archive, {scrap: false}))
-    })
+function createFeed (cb) {
+  var archive = createArchive()
+  archive.ready(() => {
+    cb(null, hyperfeed(archive, {scrap: false}))
   })
 }
 
-function createFeedWithFixture () {
-  return new Promise((resolve, reject) => {
-    var archive = createArchive()
-    archive.ready(() => {
-      var feed = hyperfeed(archive, {scrap: false})
-      feed.update(fixture()).then(() => resolve(feed))
+function createFeedWithFixture (cb) {
+  var archive = createArchive()
+  archive.ready(() => {
+    var feed = hyperfeed(archive, {scrap: false})
+    feed.update(fixture(), function (err) {
+      if (err) return cb(err)
+
+      cb(null, feed)
     })
   })
 }

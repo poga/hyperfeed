@@ -1,12 +1,12 @@
 const tape = require('tape')
-const hyperfeed = require('..')
 const Feed = require('feed')
 const FeedParser = require('feedparser')
 const toStream = require('string-to-stream')
 const {createFeed, createFeedWithFixture} = require('./helpers')
 
 tape('update & list', function (t) {
-  createFeedWithFixture().then(f => {
+  createFeedWithFixture((err, f) => {
+    t.error(err)
     f.list((err, entries) => {
       t.error(err)
       t.same(entries.length, 10)
@@ -31,9 +31,11 @@ tape('multiple update', function (t) {
     }
     feed2.addItem(x)
   }
-  createFeedWithFixture().then(f => {
+  createFeedWithFixture((err, f) => {
+    t.error(err)
     // update with same xml
-    f.update(feed2.render('rss-2.0')).then(f => {
+    f.update(feed2.render('rss-2.0'), (err, f) => {
+      t.error(err)
       f.list((err, entries) => {
         t.error(err)
         t.same(entries.length, 10)
@@ -47,7 +49,8 @@ tape('multiple update', function (t) {
           date: new Date()
         }
         feed2.addItem(x)
-        f.update(feed2.render('rss-2.0')).then(f => {
+        f.update(feed2.render('rss-2.0'), (err, f) => {
+          t.error(err)
           f.list((err, entries) => {
             t.error(err)
             t.same(entries.length, 11)
@@ -66,12 +69,17 @@ tape('save', function (t) {
     link: 'http://example.com'
   })
   var rss = feed.render('rss-2.0')
-  createFeed().then(f => {
-    f.update(rss).then(f => {
-      f.save({title: 'moo'}).then(() => {
+  createFeed((err, f) => {
+    t.error(err)
+
+    f.update(rss, (err, f) => {
+      t.error(err)
+
+      f.save({title: 'moo'}, err => {
+        t.error(err)
         f.list((err, entries) => {
           t.error(err)
-          f.get(entries[0]).then(item => {
+          f.get(entries[0], (err, item) => {
             t.error(err)
 
             t.ok(item) // should have default name(guid)
@@ -84,24 +92,33 @@ tape('save', function (t) {
 })
 
 tape('get not found', function (t) {
-  createFeed().then(f => {
-    f.get('non-exists').catch(err => {
+  createFeed((err, f) => {
+    t.error(err)
+    f.get('non-exists', (err, item) => {
       t.ok(err)
+      t.notok(item)
       t.end()
     })
   })
 })
 
 tape('save with pre-scrapped data', function (t) {
-  createFeed().then(f => {
-    f.save({title: 'foo'}, 'abc').then(() => {
+  createFeed((err, f) => {
+    t.error(err)
+
+    f.save({title: 'foo'}, 'abc', err => {
+      t.error(err)
+
       f.list((err, files) => {
         t.error(err)
         t.ok(files[0])
         t.same(files.length, 1)
-        f.get(files[0]).then(item => {
+        f.get(files[0], (err, item) => {
+          t.error(err)
+
           t.same(JSON.parse(item.toString()).title, 'foo')
-          f.get(`scrap/${files[0]}`).then(data => {
+          f.get(`scrap/${files[0]}`, (err, data) => {
+            t.error(err)
             t.same(data.toString(), 'abc')
             t.end()
           })
@@ -112,8 +129,11 @@ tape('save with pre-scrapped data', function (t) {
 })
 
 tape('create xml', function (t) {
-  createFeedWithFixture().then(f => {
-    f.xml(10).then(xml => {
+  createFeedWithFixture((err, f) => {
+    t.error(err)
+    f.xml(10, (err, xml) => {
+      t.error(err)
+
       var parser = new FeedParser()
       toStream(xml).pipe(parser)
 
@@ -153,8 +173,12 @@ tape('dedup', function (t) {
     feed.addItem(x)
   }
   var rss = feed.render('rss-2.0')
-  createFeed().then(f => {
-    f.update(rss).then(f => {
+  createFeed((err, f) => {
+    t.error(err)
+
+    f.update(rss, (err, f) => {
+      t.error(err)
+
       f.list((err, entries) => {
         t.error(err)
         t.same(entries.length, 1)
@@ -165,13 +189,19 @@ tape('dedup', function (t) {
 })
 
 tape('set meta', function (t) {
-  createFeed().then(f => {
+  createFeed((err, f) => {
+    t.error(err)
+
     f.setMeta({
       title: 'foo',
       description: 'http://example2.com',
       link: 'http://example2.com'
-    }).then(f => {
-      f.xml(10).then(xml => {
+    }, (err) => {
+      t.error(err)
+
+      f.xml(10, (err, xml) => {
+        t.error(err)
+
         var parser = new FeedParser()
         toStream(xml).pipe(parser)
 

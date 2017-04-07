@@ -6,7 +6,7 @@ Hyperfeed is a self-archiving P2P live feed. You can convert any RSS/ATOM/RDF fe
 
 * **Self-archiving**: All published items will be archived. If the feed is updated and doesn't contain old items, Hyperfeed still preserve them.
 * **P2P**: Feed items are distributed in a P2P manner. Save bandwidth and support offline mode.
-* **Live**: No need to constantly scrap a RSS feed, Updates will be pushed to you.
+* **Live**: No need to poll the RSS feed. Updates will be pushed to you.
 
 ```
 npm install hyperfeed
@@ -14,17 +14,26 @@ npm install hyperfeed
 
 ## Synopsis
 
-Create a hyperfeed from a RSS feed:
+Publish your RSS feed through hyperfeed:
 
 ```js
 const request = require('request')
 const hyperfeed = require('hyperfeed')
+const hyperdrive = require('hyperdrive')
 const swarm = require('hyperdiscovery')
 
-request('https://medium.com/feed/google-developers', (err, resp, body) => {
-  hyperfeed().createFeed().update(body).then(feed => {
-    swarm(feed) // share it through a p2p network
-    console.log(feed.key.toString('hex')) // this will be the key for discovering
+const url = 'https://medium.com/feed/google-developers'
+
+var archive = hyperdrive('./feed')
+archive.ready(() => {
+  console.log(archive.key.toString('hex'))
+  swarm(archive)
+
+  var feed = hyperfeed(archive)
+  request(url, function (err, resp, body) {
+    feed.update(body).then(() => {
+      console.log('feed imported')
+    })
   })
 })
 ```
