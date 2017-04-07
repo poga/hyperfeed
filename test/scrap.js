@@ -1,5 +1,6 @@
 const tape = require('tape')
 const hyperfeed = require('..')
+const {createArchive} = require('./helpers')
 
 const Feed = require('feed')
 
@@ -19,53 +20,46 @@ feed.addItem({
 var rss = feed.render('rss-2.0')
 
 tape('scrap', function (t) {
-  hyperfeed().createFeed({scrap: true}).update(rss).then(f => {
+  testFeed().then(f => {
     f.list((err, entries) => {
       t.error(err)
       t.same(entries.length, 1)
-      t.same(entries[0].name, feed.items[0].guid)
+      t.same(entries[0], feed.items[0].guid)
       t.end()
     })
   })
 })
 
-tape('scrap with list stream', function (t) {
-  hyperfeed().createFeed({scrap: true}).update(rss).then(f => {
-    var list = f.list()
-    var entries = []
-    list.on('data', x => { entries.push(x) })
-    list.on('end', () => {
-      t.same(entries.length, 1)
-      t.end()
-    })
-  })
-})
-
-tape('scrap with list stream (withScrapped = true)', function (t) {
-  hyperfeed().createFeed({scrap: true}).update(rss).then(f => {
-    var list = f.list({withScrapped: true})
-    var entries = []
-    list.on('data', x => { entries.push(x) })
-    list.on('end', () => {
-      t.same(entries.length, 2)
-      t.same(Math.floor(entries[0].ctime / 1000), Math.floor(feed.items[0].date.getTime() / 1000)) // we only care precision to second
-      // scrapped data should have the same ctime as its feed item
-      t.same(Math.floor(entries[1].ctime / 1000), Math.floor(feed.items[0].date.getTime() / 1000)) // we only care precision to second
+tape('scrap with list', function (t) {
+  testFeed().then(f => {
+    f.list(function (err, entries) {
+      t.error(err)
+      t.same(entries, ['foo'])
       t.end()
     })
   })
 })
 
 tape('scraped data', function (t) {
-  hyperfeed().createFeed({scrap: true}).update(rss).then(f => {
+  testFeed().then(f => {
     f.list((err, entries) => {
       t.error(err)
       t.same(entries.length, 1)
 
-      f.load(`scrap/${entries[0].name}`, {raw: true}).then(data => {
-        t.ok(data.match(/The MIT License/))
+      f.get(`scrap/${entries[0]}`).then(data => {
+        t.ok(data.toString().match(/The MIT License/))
         t.end()
       })
     })
   })
 })
+
+function testFeed () {
+  var archive = createArchive()
+  return new Promise((resolve, reject) => {
+    archive.ready(() => {
+      var feed = hyperfeed(archive, {scrap: true})
+      feed.update(rss).then(() => { resolve(feed) })
+    })
+  })
+}
