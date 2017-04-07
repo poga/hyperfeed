@@ -4,8 +4,6 @@ const toStream = require('string-to-stream')
 const async = require('async')
 const request = require('request')
 const uuid = require('uuid')
-const events = require('events')
-const inherits = require('inherits')
 const pump = require('pump')
 const collect = require('collect-stream')
 const moment = require('moment')
@@ -16,7 +14,6 @@ const SCRAP_DIR = 'scrap'
 
 function Feed (archive, opts) {
   if (!(this instanceof Feed)) return new Feed(archive, opts)
-  events.EventEmitter.call(this)
 
   opts = Object.assign({}, DEFAULT_OPTS, opts)
 
@@ -24,8 +21,6 @@ function Feed (archive, opts) {
 
   this.archive = archive
 }
-
-inherits(Feed, events.EventEmitter)
 
 Feed.prototype.update = function (feed) {
   var self = this
