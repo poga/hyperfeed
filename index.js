@@ -148,7 +148,7 @@ Feed.prototype.save = function (item, scrappedData, cb) {
   }
 
   function _saveScrapped (item, data, cb) {
-    pump(toStream(data), self.archive.createWriteStream(`${SCRAP_DIR}/${item.guid}`), cb)
+    pump(toStream(data), self.archive.createWriteStream(scrappedPath(item.guid)), cb)
   }
 }
 
@@ -160,8 +160,8 @@ Feed.prototype.get = function (id, cb) {
   })
 }
 
-Feed.prototype.getScrapped = function (id) {
-
+Feed.prototype.getScrapped = function (id, cb) {
+  this.get(scrappedPath(id), cb)
 }
 
 Feed.prototype._load = function (entry, opts) {
@@ -171,3 +171,7 @@ Feed.prototype._load = function (entry, opts) {
 }
 
 module.exports = Feed
+
+function scrappedPath (id) {
+  return `${SCRAP_DIR}/${id}`
+}

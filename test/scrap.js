@@ -25,25 +25,13 @@ tape('scrap', function (t) {
 
     f.list((err, entries) => {
       t.error(err)
-      t.same(entries.length, 1)
-      t.same(entries[0], feed.items[0].guid)
-      t.end()
-    })
-  })
-})
-
-tape('scrap with list', function (t) {
-  testFeed((err, f) => {
-    t.error(err)
-    f.list(function (err, entries) {
-      t.error(err)
       t.same(entries, ['foo'])
       t.end()
     })
   })
 })
 
-tape('scraped data', function (t) {
+tape('scrapped data', function (t) {
   testFeed((err, f) => {
     t.error(err)
     f.list((err, entries) => {
@@ -51,6 +39,22 @@ tape('scraped data', function (t) {
       t.same(entries.length, 1)
 
       f.get(`scrap/${entries[0]}`, (err, data) => {
+        t.error(err)
+        t.ok(data.toString().match(/The MIT License/))
+        t.end()
+      })
+    })
+  })
+})
+
+tape('getScrapped', function (t) {
+  testFeed((err, f) => {
+    t.error(err)
+    f.list((err, entries) => {
+      t.error(err)
+      t.same(entries.length, 1)
+
+      f.getScrapped(entries[0], (err, data) => {
         t.error(err)
         t.ok(data.toString().match(/The MIT License/))
         t.end()
