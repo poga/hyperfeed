@@ -6,7 +6,9 @@ const {createFeed, createFeedWithFixture} = require('./helpers')
 
 tape('ready', function (t) {
   createFeed((err, f) => {
+    t.error(err)
     t.ok(f.key)
+    t.ok(f.discoveryKey)
     t.end()
   })
 })

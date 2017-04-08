@@ -20,7 +20,10 @@ function Feed (archive, opts) {
   this.scrapLink = opts.scrapLink
 
   this.archive = archive
-  this.archive.ready(() => { this.key = this.archive.key })
+  this.archive.ready(() => {
+    this.key = this.archive.key
+    this.discoveryKey = this.archive.discoveryKey
+  })
 }
 
 Feed.prototype.ready = function (cb) {
