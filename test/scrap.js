@@ -65,8 +65,8 @@ tape('getScrapped', function (t) {
 
 function testFeed (cb) {
   var archive = createArchive()
-  archive.ready(() => {
-    var feed = hyperfeed(archive, {scrapLink: true})
+  var feed = hyperfeed(archive, {scrapLink: true})
+  feed.ready(() => {
     feed.update(rss, cb)
   })
 }

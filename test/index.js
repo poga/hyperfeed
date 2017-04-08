@@ -4,6 +4,13 @@ const FeedParser = require('feedparser')
 const toStream = require('string-to-stream')
 const {createFeed, createFeedWithFixture} = require('./helpers')
 
+tape('ready', function (t) {
+  createFeed((err, f) => {
+    t.ok(f.key)
+    t.end()
+  })
+})
+
 tape('update & list', function (t) {
   createFeedWithFixture((err, f) => {
     t.error(err)

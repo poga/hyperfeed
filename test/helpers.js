@@ -9,15 +9,14 @@ function createArchive (key, opts) {
 
 function createFeed (cb) {
   var archive = createArchive()
-  archive.ready(() => {
-    cb(null, hyperfeed(archive, {scrapLink: false}))
-  })
+  var feed = hyperfeed(archive, {scrapLink: false})
+  feed.ready(() => { cb(null, feed) })
 }
 
 function createFeedWithFixture (cb) {
   var archive = createArchive()
-  archive.ready(() => {
-    var feed = hyperfeed(archive, {scrapLink: false})
+  var feed = hyperfeed(archive, {scrapLink: false})
+  feed.ready(() => {
     feed.update(fixture(), function (err) {
       if (err) return cb(err)
 
