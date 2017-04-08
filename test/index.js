@@ -117,7 +117,7 @@ tape('save with pre-scrapped data', function (t) {
           t.error(err)
 
           t.same(JSON.parse(item.toString()).title, 'foo')
-          f.get(`scrap/${files[0]}`, (err, data) => {
+          f.get(`scrapped/${files[0]}`, (err, data) => {
             t.error(err)
             t.same(data.toString(), 'abc')
             t.end()

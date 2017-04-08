@@ -38,7 +38,7 @@ tape('scrapped data', function (t) {
       t.error(err)
       t.same(entries.length, 1)
 
-      f.get(`scrap/${entries[0]}`, (err, data) => {
+      f.get(`scrapped/${entries[0]}`, (err, data) => {
         t.error(err)
         t.ok(data.toString().match(/The MIT License/))
         t.end()
@@ -66,7 +66,7 @@ tape('getScrapped', function (t) {
 function testFeed (cb) {
   var archive = createArchive()
   archive.ready(() => {
-    var feed = hyperfeed(archive, {scrap: true})
+    var feed = hyperfeed(archive, {scrapLink: true})
     feed.update(rss, cb)
   })
 }

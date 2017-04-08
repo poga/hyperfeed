@@ -8,16 +8,16 @@ const pump = require('pump')
 const collect = require('collect-stream')
 const moment = require('moment')
 
-const DEFAULT_OPTS = {scrap: true}
+const DEFAULT_OPTS = {scrapLink: true}
 const METADATA_FILE = 'metadata.json'
-const SCRAP_DIR = 'scrap'
+const SCRAP_DIR = 'scrapped'
 
 function Feed (archive, opts) {
   if (!(this instanceof Feed)) return new Feed(archive, opts)
 
   opts = Object.assign({}, DEFAULT_OPTS, opts)
 
-  this.scrap = opts.scrap
+  this.scrapLink = opts.scrapLink
 
   this.archive = archive
 }
@@ -132,7 +132,7 @@ Feed.prototype.save = function (item, scrappedData, cb) {
 
   function done () {
     if (scrappedData) return _saveScrapped(item, scrappedData, cb)
-    if (self.scrap) return _scrap(item, cb)
+    if (self.scrapLink) return _scrap(item, cb)
 
     return cb()
   }
