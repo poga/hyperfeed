@@ -43,7 +43,7 @@ tape('multiple update', function (t) {
   createFeedWithFixture((err, f) => {
     t.error(err)
     // update with same xml
-    f.update(feed2.render('rss-2.0'), (err, f) => {
+    f.update(toStream(feed2.render('rss-2.0')), (err, f) => {
       t.error(err)
       f.list((err, entries) => {
         t.error(err)
@@ -58,7 +58,7 @@ tape('multiple update', function (t) {
           date: new Date()
         }
         feed2.addItem(x)
-        f.update(feed2.render('rss-2.0'), (err, f) => {
+        f.update(toStream(feed2.render('rss-2.0')), (err, f) => {
           t.error(err)
           f.list((err, entries) => {
             t.error(err)
@@ -81,7 +81,7 @@ tape('save', function (t) {
   createFeed((err, f) => {
     t.error(err)
 
-    f.update(rss, (err, f) => {
+    f.update(toStream(rss), (err, f) => {
       t.error(err)
 
       f.save({title: 'moo'}, err => {
@@ -185,7 +185,7 @@ tape('dedup', function (t) {
   createFeed((err, f) => {
     t.error(err)
 
-    f.update(rss, (err, f) => {
+    f.update(toStream(rss), (err, f) => {
       t.error(err)
 
       f.list((err, entries) => {

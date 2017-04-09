@@ -1,5 +1,6 @@
 const tape = require('tape')
 const hyperfeed = require('..')
+const toStream = require('string-to-stream')
 const {createArchive} = require('./helpers')
 
 const Feed = require('feed')
@@ -17,7 +18,7 @@ feed.addItem({
   guid: 'foo',
   date: new Date()
 })
-var rss = feed.render('rss-2.0')
+var rss = toStream(feed.render('rss-2.0'))
 
 tape('scrap', function (t) {
   testFeed((err, f) => {

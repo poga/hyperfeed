@@ -2,6 +2,7 @@ const ram = require('random-access-memory')
 const hyperdrive = require('hyperdrive')
 const Feed = require('feed')
 const hyperfeed = require('..')
+const toStream = require('string-to-stream')
 
 function createArchive (key, opts) {
   return hyperdrive(ram, key, opts)
@@ -43,7 +44,7 @@ function fixture () {
     testEntries.push(x)
     feed.addItem(x)
   }
-  return feed.render('rss-2.0')
+  return toStream(feed.render('rss-2.0'))
 }
 
 module.exports = {createArchive, createFeed, fixture, createFeedWithFixture}

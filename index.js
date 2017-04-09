@@ -20,6 +20,7 @@ function Feed (archive, opts) {
   this.scrapLink = opts.scrapLink
 
   this.archive = archive
+
   this.archive.ready(() => {
     this.key = this.archive.key
     this.discoveryKey = this.archive.discoveryKey
@@ -30,13 +31,13 @@ Feed.prototype.ready = function (cb) {
   this.archive.ready(cb)
 }
 
-Feed.prototype.update = function (feed, cb) {
+Feed.prototype.update = function (feedStream, cb) {
   if (!this.archive.metadata.writable) return cb(new Error("can't update archive you don't own"))
 
   var self = this
   var feedparser = new FeedParser()
 
-  toStream(feed).pipe(feedparser)
+  feedStream.pipe(feedparser)
 
   var tasks = []
   feedparser.on('error', e => cb(e))
