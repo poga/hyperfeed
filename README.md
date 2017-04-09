@@ -83,7 +83,7 @@ Wait for feed is fully ready and all properties has been populated.
 
 import a RSS feed into `feed`. Accept a stream.
 
-#### `feed.setMeta`
+#### `feed.setMeta(metadataObject, cb(err))`
 
 Set feed's metadata.
 
@@ -93,13 +93,13 @@ List archived item in the feed.
 
 #### `feed.save(item, [scrappedData], cb(err))`
 
-Save a new feed item into hyperfeed. Check [https://github.com/jpmonette/feed](https://github.com/jpmonette/feed) for item detail.
+Save a new feed item.  Check [https://github.com/jpmonette/feed](https://github.com/jpmonette/feed) for item detail.
 
 If you already have scrapped data for the given item, you can pass it to `scrappedData` to avoid redundant requests.
 
-#### `feed.xml(count, cb(err, xml))`
+#### `feed.export(count, cb(err, rss))`
 
-Returns a RSS-2.0 Feed in XML format containing latest `count` items.
+Export a RSS-2.0 Feed containing latest `count` items.
 
 ## Related Modules
 

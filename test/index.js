@@ -13,18 +13,29 @@ tape('ready', function (t) {
   })
 })
 
-tape('update & list', function (t) {
+tape('update', function (t) {
   createFeedWithFixture((err, f) => {
     t.error(err)
-    f.list((err, entries) => {
+    f.archive.readdir('/', function (err, entries) {
       t.error(err)
-      t.same(entries.length, 10)
+      t.same(entries, [ 'metadata.json', 'id-0', 'id-1', 'id-2', 'id-3', 'id-4', 'id-5', 'id-6', 'id-7', 'id-8', 'id-9' ])
       t.end()
     })
   })
 })
 
-tape('multiple update', function (t) {
+tape('list', function (t) {
+  createFeedWithFixture((err, f) => {
+    t.error(err)
+    f.list((err, entries) => {
+      t.error(err)
+      t.same(entries, [ 'id-0', 'id-1', 'id-2', 'id-3', 'id-4', 'id-5', 'id-6', 'id-7', 'id-8', 'id-9' ])
+      t.end()
+    })
+  })
+})
+
+tape('update same items', function (t) {
   var feed2 = new Feed({
     title: 'test feed',
     description: 'http://example.com',
@@ -40,60 +51,72 @@ tape('multiple update', function (t) {
     }
     feed2.addItem(x)
   }
+
   createFeedWithFixture((err, f) => {
     t.error(err)
-    // update with same xml
+    // update with the same feed
     f.update(toStream(feed2.render('rss-2.0')), (err, f) => {
       t.error(err)
       f.list((err, entries) => {
         t.error(err)
         t.same(entries.length, 10)
+        t.end()
+      })
+    })
+  })
+})
 
-        // update with xml + 1 new item
-        var x = {
-          title: `entry${10}`,
-          description: `desc${10}`,
-          url: 'example.com',
-          guid: `id-${10}`,
-          date: new Date()
-        }
-        feed2.addItem(x)
-        f.update(toStream(feed2.render('rss-2.0')), (err, f) => {
-          t.error(err)
-          f.list((err, entries) => {
-            t.error(err)
-            t.same(entries.length, 11)
-            t.end()
-          })
-        })
+tape('update with new item', function (t) {
+  var feed2 = new Feed({
+    title: 'test feed',
+    description: 'http://example.com',
+    link: 'http://example.com'
+  })
+  for (var i = 0; i < 10; i++) {
+    var x = {
+      title: `entry${i}`,
+      description: `desc${i}`,
+      url: 'example.com',
+      guid: `id-${i}`,
+      date: new Date()
+    }
+    feed2.addItem(x)
+  }
+  // add a new item
+  feed2.addItem({
+    title: `entry${10}`,
+    description: `desc${10}`,
+    url: 'example.com',
+    guid: `id-${10}`,
+    date: new Date()
+  })
+
+  createFeedWithFixture((err, f) => {
+    t.error(err)
+    f.update(toStream(feed2.render('rss-2.0')), (err, f) => {
+      t.error(err)
+      f.list((err, entries) => {
+        t.error(err)
+        t.same(entries.length, 11)
+        t.end()
       })
     })
   })
 })
 
 tape('save', function (t) {
-  var feed = new Feed({
-    title: 'test feed',
-    description: 'http://example.com',
-    link: 'http://example.com'
-  })
-  var rss = feed.render('rss-2.0')
   createFeed((err, f) => {
     t.error(err)
 
-    f.update(toStream(rss), (err, f) => {
+    f.save({title: 'moo'}, err => {
       t.error(err)
-
-      f.save({title: 'moo'}, err => {
+      f.list((err, entries) => {
         t.error(err)
-        f.list((err, entries) => {
+        f.get(entries[0], (err, item) => {
           t.error(err)
-          f.get(entries[0], (err, item) => {
-            t.error(err)
 
-            t.ok(item) // should have default name(guid)
-            t.end()
-          })
+          t.ok(item) // should have default name(guid)
+          t.end()
         })
       })
     })
@@ -137,10 +160,10 @@ tape('save with pre-scrapped data', function (t) {
   })
 })
 
-tape('create xml', function (t) {
+tape('export', function (t) {
   createFeedWithFixture((err, f) => {
     t.error(err)
-    f.xml(10, (err, xml) => {
+    f.export(10, (err, xml) => {
       t.error(err)
 
       var parser = new FeedParser()
@@ -163,40 +186,6 @@ tape('create xml', function (t) {
   })
 })
 
-tape('dedup', function (t) {
-  var feed = new Feed({
-    title: 'test feed',
-    description: 'http://example.com',
-    link: 'http://example.com'
-  })
-  var testEntries = []
-  for (var i = 0; i < 3; i++) {
-    var x = {
-      title: `entry${i}`,
-      description: `desc${i}`,
-      url: 'example.com',
-      guid: 1, // all with same guid
-      date: new Date()
-    }
-    testEntries.push(x)
-    feed.addItem(x)
-  }
-  var rss = feed.render('rss-2.0')
-  createFeed((err, f) => {
-    t.error(err)
-
-    f.update(toStream(rss), (err, f) => {
-      t.error(err)
-
-      f.list((err, entries) => {
-        t.error(err)
-        t.same(entries.length, 1)
-        t.end()
-      })
-    })
-  })
-})
-
 tape('set meta', function (t) {
   createFeed((err, f) => {
     t.error(err)
@@ -208,7 +197,7 @@ tape('set meta', function (t) {
     }, (err) => {
       t.error(err)
 
-      f.xml(10, (err, xml) => {
+      f.export(10, (err, xml) => {
         t.error(err)
 
         var parser = new FeedParser()

@@ -92,7 +92,7 @@ Feed.prototype.list = function (cb) {
   })
 }
 
-Feed.prototype.xml = function (count, cb) {
+Feed.prototype.export = function (count, cb) {
   var self = this
   this.list((err, files) => {
     if (err) return cb(err)

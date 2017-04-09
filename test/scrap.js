@@ -18,26 +18,14 @@ feed.addItem({
   guid: 'foo',
   date: new Date()
 })
-var rss = toStream(feed.render('rss-2.0'))
-
-tape('scrap', function (t) {
-  testFeed((err, f) => {
-    t.error(err)
-
-    f.list((err, entries) => {
-      t.error(err)
-      t.same(entries, ['foo'])
-      t.end()
-    })
-  })
-})
+var rss = feed.render('rss-2.0')
 
 tape('scrapped data', function (t) {
   testFeed((err, f) => {
     t.error(err)
     f.list((err, entries) => {
       t.error(err)
-      t.same(entries.length, 1)
+      t.same(entries, ['foo'])
 
       f.get(`scrapped/${entries[0]}`, (err, data) => {
         t.error(err)
@@ -68,6 +56,6 @@ function testFeed (cb) {
   var archive = createArchive()
   var feed = hyperfeed(archive, {scrapLink: true})
   feed.ready(() => {
-    feed.update(rss, cb)
+    feed.update(toStream(rss), cb)
   })
 }
