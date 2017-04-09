@@ -25,17 +25,15 @@ const swarm = require('hyperdiscovery')
 const url = 'https://medium.com/feed/google-developers'
 
 var archive = hyperdrive('./feed')
-archive.ready(() => {
-  console.log(archive.key.toString('hex'))
+var feed = hyperfeed(archive)
+feed.ready(() => {
   swarm(archive)
-
-  var feed = hyperfeed(archive)
-  request(url, function (err, resp, body) {
-    feed.update(body).then(() => {
-      console.log('feed imported')
-    })
+  console.log(feed.key.toString('hex'))
+  feed.update(request(url), (err) => {
+    console.log('feed imported')
   })
 })
+
 ```
 
 Now you can replicate the hyperfeed through a p2p network:
@@ -43,98 +41,63 @@ Now you can replicate the hyperfeed through a p2p network:
 ```js
 const Hyperfeed = require('hyperfeed')
 const swarm = require('hyperdiscovery')
+const hyperdrive = require('hyperdrive')
 
-var feed = hyperfeed().createFeed(<KEY FROM ABOVE>, {own: false})
-swarm(feed) // load the feed from the p2p network
+var archive = hyperdrive('./anotherFeed', '<KEY FROM ABOVE>')
+var feed = hyperfeed(archive)
+swarm(archive) // load the feed from the p2p network
 feed.list((err, entries) => {
   console.log(entries) // all entries in the feed (include history entries)
-})
-
-// open a read stream, listening feed updates
-var rs = feed.list({live: true})
-rs.on('data', entry => {
-  // whenever a new entry is available, you will automatically receive it without any polling
-
-  // you can load the feed item with feed.load
-  feed.load(entry).then(item => {
-    // the actual feed item.
-  })
 })
 ```
 
 ## API
 
-#### `var hf = hyperfeed([drive])`
+#### `var feed = hyperfeed(archive, [opts])`
 
-Create a new Hyperfeed instance. If you want to reuse an existing hyperdrive, pass it as argument.
+Create a new Hyperfeed instance. `opts` includes:
 
-#### `var feed = hf.createFeed([key], [opts])`
-
-Create a new Hyperfeed instance. If you want to download from an existing feed, pass the feed's key as the first argument. Options include
-
-```js
+```javascript
 {
-  own: boolean, // REQUIRED if `key` is not null. Set to true if this is a hyperfeed you created (in the same storage) before.
-  file: function (name) { return raf(name) }, // set to a raf if you want to save items to filesystem
-  scrap: false      // if set to true, hyperfeed will also save the page each feed item pointed to.
+  scrapLink: true // set to false to stop archiving linked url for each feed item
 }
-```
-
-where raf is
-
-```js
-const raf = require('random-access-file')
 ```
 
 #### `feed.key`
 
-The 32-bit public key of the feed.
+The public key identifying the feed.
 
-#### `var promise = feed.update(rssXML)`
+#### `feed.discoveryKey`
 
-Parse and save new items from a Feed XML. We support RSS, ATOM, and RDF feeds.
+A key derived from the public key that can be used to discovery other peers sharing this feed.
 
 #### `feed.meta`
 
-Returns the metadata of the feed.
+The metadata of the feed.
 
-#### `var promise = feed.setMeta(obj)`
+#### `feed.ready(cb)`
 
-Explicitly set the metadata
+Wait for feed is fully ready and all properties has been populated.
 
-#### `var stream = feed.list([opts], [cb])`
+#### `feed.update(feedStream, cb(err, feed))`
 
-Returns a readable stream of all entries in the archive, include history
+import a RSS feed into `feed`. Accept a stream.
 
-```js
-{
-  offset: 0 // start streaming from this offset (default: 0)
-  live: false // keep the stream open as new updates arrive (default: false)
-  withScrapped: false // also return scrapped data (default: false)
-}
-```
+#### `feed.setMeta`
 
-You can collect the results of the stream with cb(err, entries).
+Set feed's metadata.
 
-**Entries are metadata of feed items. If you want to get the feed item itself, call `feed.load(entry)`**
+#### `feed.list(cb(err, entries))`
 
-#### `var promise = feed.load(entry, [opts])`
+List archived item in the feed.
 
-Returns a Feed item from given entry.
-
-if you want to load scrapped data and it's not a JSON. set `opts` to `{raw: true}`
-
-`entry` is an object returned by `#list()`
-
-#### `var promise = feed.save(item, [targetEntry], [scrappedData])`
+#### `feed.save(item, [scrappedData], cb(err))`
 
 Save a new feed item into hyperfeed. Check [https://github.com/jpmonette/feed](https://github.com/jpmonette/feed) for item detail.
 
-If you want to specify entry metadata (e.g. `ctime`, `name`...), pass a `targetEntry`.
+If you already have scrapped data for the given item, you can pass it to `scrappedData` to avoid redundant requests.
 
-If you already have scrapped data from item.link, you can pass it to `scrappedData` to avoid redundant requests.
-
-#### `var promise = feed.xml(count)`
+#### `feed.xml(count, cb(err, xml))`
 
 Returns a RSS-2.0 Feed in XML format containing latest `count` items.
 
