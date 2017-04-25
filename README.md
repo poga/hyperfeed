@@ -4,9 +4,9 @@
 
 Hyperfeed is a self-archiving P2P live feed. You can convert any RSS/ATOM/RDF feed to a P2P live update publishing network.
 
-* **Self-archiving**: All published items will be archived. If the feed is updated and doesn't contain old items, Hyperfeed still preserve them.
-* **P2P**: Feed items are distributed in a P2P manner. Save bandwidth and support offline mode.
-* **Live**: No need to poll the RSS feed. Updates will be pushed to you.
+* **Self-archiving**: Items and it's linked page will be archived within hyperfeed.
+* **Decentralized**: Feed contents can still be distributed between readers even if the original host is down.
+* **Live**: No need to poll the original feed. Updates will be pushed to you.
 
 ```
 npm install hyperfeed
@@ -59,7 +59,7 @@ Create a new Hyperfeed instance. `opts` includes:
 
 ```javascript
 {
-  scrapLink: true // set to false to stop archiving linked url for each feed item
+  scrapLink: true // set to false to stop archiving linked page for each feed item
 }
 ```
 
@@ -100,11 +100,6 @@ If you already have scrapped data for the given item, you can pass it to `scrapp
 #### `feed.export(count, cb(err, rss))`
 
 Export a RSS-2.0 Feed containing latest `count` items.
-
-## Related Modules
-
-* [hyperfeed-server](https://github.com/poga/hyperfeed-server): host a hyperfeed from cli
-* [hyperfeed-merge](https://github.com/poga/hyperfeed-merge): merge multiple hyperfeed into one
 
 ## License
 
